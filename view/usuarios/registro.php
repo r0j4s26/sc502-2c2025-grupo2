@@ -1,6 +1,6 @@
 <?php
 
-
+// prueba
 ?>
 <!DOCTYPE html>
 <html lang="en">
