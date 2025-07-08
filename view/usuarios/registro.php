@@ -20,6 +20,7 @@
     <div class="row justify-content-center">
       <div class="col-md-8 col-lg-6">
         <div class="card shadow rounded-4 border-0">
+
           <div class="card-header bg-white text-center border-0 pb-0">
             <h4 class="fw-bold mb-0">Créate una cuenta</h4>
           </div>
@@ -37,6 +38,11 @@
               </div>
 
               <div class="mb-3 mt-3">
+                <label for="txtTelefono" class="form-label">Teléfono</label>
+                <input type="tel" class="form-control" maxlength="20" id="txtTelefono" name="txtTelefono" placeholder="Número de teléfono" required>
+              </div>
+
+              <div class="mb-3">
                 <label for="txtEmail" class="form-label">Correo Electrónico</label>
                 <input type="email" class="form-control" id="txtEmail" name="txtEmail" placeholder="ejemplo@correo.com" required>
               </div>
@@ -70,7 +76,6 @@
       </div>
     </div>
   </div>
-
 </body>
 
 
