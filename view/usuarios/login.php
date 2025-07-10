@@ -28,14 +28,14 @@
               <h3 class="card-title fw-bold">Iniciar Sesión</h3>
             </div>
 
-            <form id="loginForm" action="" method="post">
+            <form id="loginForm" action="mototienda.php" method="post">
               <div class="form-floating mb-3">
-                <input type="email" class="form-control" id="txtEmail" name="txtEmail" placeholder="Correo Electrónico" required>
+                <input type="email" class="form-control" id="txtEmail" name="txtEmail" placeholder="Correo Electrónico" >
                 <label for="txtEmail"><i class="fas fa-envelope me-2"></i>Correo Electrónico</label>
               </div>
 
               <div class="form-floating mb-4">
-                <input type="password" class="form-control" id="txtPassword" name="txtPassword" placeholder="Contraseña" required>
+                <input type="password" class="form-control" id="txtPassword" name="txtPassword" placeholder="Contraseña" >
                 <label for="txtPassword"><i class="fas fa-lock me-2"></i>Contraseña</label>
               </div>
 
