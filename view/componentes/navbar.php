@@ -14,10 +14,11 @@ echo '
                         Administración
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/sc502-2c2025-grupo2/view/Administracion/Usuarios/usuarios.php"">Usuarios</a></li>
+                        <li><a class="dropdown-item" href="/sc502-2c2025-grupo2/view/Administracion/admUsuarios/usuarios.php">Usuarios</a></li>
                         <li><a class="dropdown-item" href="/sc502-2c2025-grupo2/view/Administracion/Categorias/categorias.php"">Categorías</a></li>
                         <li><a class="dropdown-item" href="/sc502-2c2025-grupo2/view/Administracion/Repuestos/repuestos.php">Repuestos</a></li>
                         <li><a class="dropdown-item" href="/sc502-2c2025-grupo2/view/Administracion/Citas/citas.php">Citas</a></li>
+                        <li><a class="dropdown-item" href="/sc502-2c2025-grupo2/view/Administracion/Proveedores/proveedores.php">Proveedores</a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
