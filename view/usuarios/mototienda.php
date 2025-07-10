@@ -14,9 +14,26 @@
 </head>
 <body>
     <?php include '../componentes/navbar.php'; ?>
+
+    <div class="p-5 text-center bg-image" style="
+    background-image: url('/sc502-2c2025-grupo2/img/inicio.png');
+    height: 25rem;
+    background-size: cover;
+    background-position: center;
+  ">
+        <div class="mask" style="background-color: rgba(0, 0, 0, 0.6); height: 100%;">
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="text-white">
+            <h1 class="mb-3 fw-bold display-4">Catalogo de productos</h1>
+            <h5 class="mb-4">Mejor calidad y precio en un solo lugar.</h5>
+            </div>
+        </div>
+        </div>
+    </div>
+
     <div class="container mt-4">
-        <h2 class="text-center mb-4">Catálogo de Productos</h2>
         <div class="row" id="catalogo-list"></div>
     </div>
+
 </body>
 </html>
