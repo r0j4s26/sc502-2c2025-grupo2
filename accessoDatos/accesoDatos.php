@@ -30,3 +30,4 @@ function cerrarConexion($mysqli){
         $mysqli->close();
     }
 }
+?>
