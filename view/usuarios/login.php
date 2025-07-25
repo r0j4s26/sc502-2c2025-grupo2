@@ -80,12 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
             <form id="loginForm" action="login.php" method="post" novalidate>
+ 
               <div class="form-floating mb-3">
-                <input type="email" class="form-control" id="txtEmail" name="txtEmail" placeholder="Correo Electrónico" value="<?= htmlspecialchars($email) ?>" required>
-
-            <form id="loginForm" action="mototienda.php" method="post">
-              <div class="form-floating mb-3">
-                <input type="email" class="form-control" id="txtEmail" name="txtEmail" placeholder="Correo Electrónico" >
+                <input type="email" class="form-control" id="txtEmail" name="txtEmail" placeholder="Correo Electrónico" value="<?= htmlspecialchars($email) ?>" required >
 
                 <label for="txtEmail"><i class="fas fa-envelope me-2"></i>Correo Electrónico</label>
               </div>
