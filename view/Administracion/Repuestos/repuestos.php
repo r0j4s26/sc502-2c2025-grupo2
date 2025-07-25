@@ -57,7 +57,9 @@
 
         <div class="text-center mb-3">
             <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuevoRepuesto">
+
                 <i class="fas fa-plus"></i>Agregar nuevo repuesto
+
             </button>
         </div>
 

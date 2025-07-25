@@ -1,0 +1,131 @@
+CREATE DATABASE MOTOREPUESTOSROJAS;
+
+USE MOTOREPUESTOSROJAS;
+
+-- TABLA PROVEEDORES
+CREATE TABLE PROVEEDORES (
+    id_proveedor INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    telefono VARCHAR(20),
+    correo VARCHAR(255),
+    direccion VARCHAR(255),
+    metodo_pago VARCHAR(100),
+    estado BIT DEFAULT 1
+);
+
+-- TABLA CATEGORIAS
+CREATE TABLE CATEGORIAS (
+    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(255),
+    estado BIT DEFAULT 1
+);
+
+-- TABLA PRODUCTOS
+CREATE TABLE PRODUCTOS (
+    id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    marca VARCHAR(100),
+    costo_unitario DECIMAL(10, 2),
+    precio_venta DECIMAL(10, 2),
+    estado BIT DEFAULT 1,
+    id_proveedor INT NOT NULL,
+    id_categoria INT NOT NULL,
+    FOREIGN KEY (id_proveedor) REFERENCES PROVEEDORES(id_proveedor),
+    FOREIGN KEY (id_categoria) REFERENCES CATEGORIAS(id_categoria)
+);
+
+-- TABLA INVENTARIO
+CREATE TABLE INVENTARIO (
+    id_inventario INT AUTO_INCREMENT PRIMARY KEY,
+    cantidad_disponible INT NOT NULL,
+    stock_minimo INT NOT NULL,
+    stock_total INT NOT NULL,
+    estado BIT DEFAULT 1,
+    id_producto INT NOT NULL UNIQUE,
+    FOREIGN KEY (id_producto) REFERENCES PRODUCTOS(id_producto)
+);
+
+-- TABLA CLIENTES
+CREATE TABLE CLIENTES (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100),
+    telefono VARCHAR(20),
+    email VARCHAR(255) UNIQUE,
+    estado BIT DEFAULT 1
+);
+ALTER TABLE CLIENTES
+ADD contrasena VARCHAR(255) NOT NULL;
+INSERT INTO CLIENTES (nombre, apellidos, telefono, email, contrasena)
+VALUES ('Carlos', 'Rojas Ramírez', '8888-1234', 'carlos.rojas@example.com', '1234');
+UPDATE CLIENTES set contrasena = '$2y$10$uSXn1r5WOZ9aIpqdaveII.crdMpHu0xIaAkdE0BD8LJruYkckUcUK' WHERE email = 'carlos.rojas@example.com';
+
+-- TABLA PEDIDOS
+CREATE TABLE PEDIDOS (
+    id_pedido INT AUTO_INCREMENT PRIMARY KEY,
+    fecha_pedido DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_entrega DATETIME,
+    direccion_entrega VARCHAR(255),
+    total DECIMAL(10, 2),
+    estado VARCHAR(50) DEFAULT 'Pendiente',
+    id_cliente INT NOT NULL,
+    FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_cliente)
+);
+
+-- TABLA DETALLE_PRODUCTOS_PEDIDOS
+CREATE TABLE DETALLE_PRODUCTOS_PEDIDOS (
+    id_pedido INT NOT NULL,
+    id_producto INT NOT NULL,
+    coste_unitario DECIMAL(10, 2),
+    cantidad INT,
+    PRIMARY KEY (id_pedido, id_producto),
+    FOREIGN KEY (id_pedido) REFERENCES PEDIDOS(id_pedido),
+    FOREIGN KEY (id_producto) REFERENCES PRODUCTOS(id_producto)
+);
+
+-- TABLA FACTURAS
+CREATE TABLE FACTURAS (
+    id_factura INT AUTO_INCREMENT PRIMARY KEY,
+    fecha_factura DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total DECIMAL(10, 2),
+    metodo_pago VARCHAR(100),
+    estado BIT DEFAULT 1,
+    id_pedido INT NOT NULL UNIQUE,
+    FOREIGN KEY (id_pedido) REFERENCES PEDIDOS(id_pedido)
+);
+
+-- TABLA CITAS
+CREATE TABLE CITAS (
+    id_cita INT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATE NOT NULL,
+    hora TIME NOT NULL,
+    motivo VARCHAR(255),
+    estado VARCHAR(50) DEFAULT 'Programada',
+    id_cliente INT NOT NULL,
+    FOREIGN KEY (id_cliente) REFERENCES CLIENTES(id_cliente)
+);
+
+
+-- VER TABLAS
+SELECT * FROM PROVEEDORES;
+SELECT * FROM CATEGORIAS;
+SELECT * FROM PRODUCTOS;
+SELECT * FROM INVENTARIO;
+SELECT * FROM CLIENTES;
+SELECT * FROM PEDIDOS;
+SELECT * FROM DETALLE_PRODUCTOS_PEDIDOS;
+SELECT * FROM FACTURAS;
+SELECT * FROM CITAS;
+
+-- BORRAR TABLAS
+DROP TABLE IF EXISTS CITAS;
+DROP TABLE IF EXISTS FACTURAS;
+DROP TABLE IF EXISTS DETALLE_PRODUCTOS_PEDIDOS;
+DROP TABLE IF EXISTS PEDIDOS;
+DROP TABLE IF EXISTS CLIENTES;
+DROP TABLE IF EXISTS INVENTARIO;
+DROP TABLE IF EXISTS PRODUCTOS;
+DROP TABLE IF EXISTS CATEGORIAS;
+DROP TABLE IF EXISTS PROVEEDORES;

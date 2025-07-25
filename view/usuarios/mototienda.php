@@ -15,6 +15,10 @@
 <body>
     <?php include '../componentes/navbar.php'; ?>
 
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">Catálogo de Productos</h2>
+        <div class="row" id="catalogo-list"></div>
+    </div>
     <div class="p-5 text-center bg-image" style="
     background-image: url('/sc502-2c2025-grupo2/img/inicio.png');
     height: 25rem;

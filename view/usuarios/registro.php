@@ -1,6 +1,86 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+
+require_once '../../accessoDatos/accesoDatos.php';
+
+function mostrarAlerta($tipo, $mensaje, $redireccion = null) {
+    echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+    echo "<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: '$tipo',
+                title: '$mensaje',
+                confirmButtonColor: '#d33'
+            }).then(() => {
+                " . ($redireccion ? "window.location.href = '$redireccion';" : "window.history.back();") . "
+            });
+        });
+    </script>";
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nombre = trim($_POST['txtNombre'] ?? '');
+    $apellidos = trim($_POST['txtApellidos'] ?? '');
+    $telefono = trim($_POST['txtTelefono'] ?? '');
+    $email = trim($_POST['txtEmail'] ?? '');
+    $contrasenna = trim($_POST['txtContrasenna'] ?? '');
+    $confContrasenna = trim($_POST['txtConfContrasenna'] ?? '');
+    $aceptaCondiciones = isset($_POST['checkCondiciones']);
+
+    if (!$nombre || !$apellidos || !$telefono || !$email || !$contrasenna || !$confContrasenna || !$aceptaCondiciones) {
+        mostrarAlerta('warning', 'Complete todos los campos y acepte los términos.');
+    }
+
+    if ($contrasenna !== $confContrasenna) {
+        mostrarAlerta('warning', 'Las contraseñas no coinciden.');
+    }
+
+    $contrasennaHash = password_hash($contrasenna, PASSWORD_DEFAULT);
+
+    try {
+        $mysqli = abrirConexion();
+
+        if (!$mysqli) {
+            mostrarAlerta('error', 'No se pudo conectar a la base de datos.');
+        }
+
+        // Verificar si el correo ya existe
+        $stmtCheck = $mysqli->prepare("SELECT id_cliente FROM CLIENTES WHERE email = ?");
+        $stmtCheck->bind_param("s", $email);
+        $stmtCheck->execute();
+        $stmtCheck->store_result();
+
+        if ($stmtCheck->num_rows > 0) {
+            $stmtCheck->close();
+            mostrarAlerta('info', 'Este correo ya está registrado.');
+        }
+        $stmtCheck->close();
+
+        // Insertar cliente
+        $stmt = $mysqli->prepare("INSERT INTO CLIENTES (nombre, apellidos, telefono, email, contrasena) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param('sssss', $nombre, $apellidos, $telefono, $email, $contrasennaHash);
+
+        if ($stmt->execute()) {
+            $stmt->close();
+            cerrarConexion($mysqli);
+            mostrarAlerta('success', 'Cuenta creada con éxito. Inicie sesión.', 'login.php');
+        } else {
+            mostrarAlerta('error', 'Error al registrar: ' . $stmt->error);
+        }
+
+    } catch (Exception $e) {
+        mostrarAlerta('error', 'Error de conexión: ' . $e->getMessage());
+    }
+}
 
 ?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 

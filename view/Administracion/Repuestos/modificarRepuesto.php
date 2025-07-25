@@ -31,7 +31,7 @@
     <div class="container mt-5">
         <div class="card card-sombra">
         <div class="card-header card-header-custom">
-            Modificar Repuesto
+
         </div>
         <div class="card-body">
             <form>
@@ -77,7 +77,9 @@
 
             <div class="text-end">
                 <button type="submit" class="btn btn-custom">Guardar Cambios</button>
+
                 <a href="/sc502-2c2025-grupo2/view/Administracion/Repuestos/repuestos.php" class="btn btn-secondary">Cancelar</a>
+
             </div>
             </form>
         </div>

@@ -4,9 +4,9 @@ function abrirConexion(){
 try{
 
     $host = "127.0.0.1";
-    $user = "";
-    $password = "";
-    $db = "BD_AWCS_IIC25";
+    $user = "root";
+    $password = "1234";
+    $db = "MOTOREPUESTOSROJAS";
 
     $mysqli = new mysqli($host, $user, $password, $db);
 
@@ -26,7 +26,8 @@ try{
 }
 
 function cerrarConexion($mysqli){
-    if($mysqli instanceof myqsli){
+    if($mysqli instanceof mysqli){
         $mysqli->close();
     }
 }
+?>

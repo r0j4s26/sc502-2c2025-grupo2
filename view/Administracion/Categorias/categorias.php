@@ -9,6 +9,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
+
+    
+
     <?php include '../../componentes/navbar.php'; ?>
     <div class="container mt-5">
         <h2 class="mb-4 text-center">Lista de Categorias</h2>
