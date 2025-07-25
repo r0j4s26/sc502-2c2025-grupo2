@@ -3,6 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+
 require_once '../../accessoDatos/accesoDatos.php';
 
 function mostrarAlerta($tipo, $mensaje, $redireccion = null) {
@@ -75,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mostrarAlerta('error', 'Error de conexión: ' . $e->getMessage());
     }
 }
+
 ?>
 
 
