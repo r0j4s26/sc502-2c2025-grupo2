@@ -94,6 +94,5 @@ cerrarConexion($mysqli);
             });
         });
     </script>
-
 </body>
 </html>
