@@ -102,9 +102,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
                                         <label for="estado" class="form-label">Estado</label>
                                         <select class="form-select" id="estado" name="estado"
                                             aria-label="Default select example">
-                                            <option select>Seleccione un estado</option>
-                                            <option <?php if ($proveedor["estado"] == "A") echo 'selected' ?> value="A">Activo</option>
-                                            <option <?php if ($proveedor["estado"] == "I") echo 'selected' ?> value="I"> Inactivo</option>
+                                            <option value="">--Seleccione un estado--</option>
+                                            <option value="Activo" <?php if ($proveedor["estado"] == "Activo") echo 'selected'; ?>>Activo</option>
+                                            <option value="Inactivo" <?php if ($proveedor["estado"] == "Inactivo") echo 'selected'; ?>> Inactivo</option>
                                         </select>
                                     </div>
                                 </div>
