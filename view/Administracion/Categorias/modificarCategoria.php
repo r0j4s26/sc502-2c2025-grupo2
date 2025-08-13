@@ -1,4 +1,48 @@
 <!DOCTYPE html>
+<?php
+ini_set('display_errors',1);
+ini_set('display_startup_errors',1);
+error_reporting (E_ALL);
+require_once '../../../accessoDatos/accesoDatos.php';
+$mysqli2 = abrirConexion();
+
+$id = $_GET['id'];
+$mensajeExito = '';
+$errorNombre = $errorDescripcion = $errorUrl = $errorEstado = "";
+
+$categoriaID = $mysqli2->query("SELECT * FROM CATEGORIAS WHERE id_categoria = $id")->fetch_assoc();
+
+cerrarConexion($mysqli2);
+
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+    try {
+        $mysqli = abrirConexion();
+        $errores = 0;
+        if ($errores == 0){
+            $stmt = $mysqli->prepare("UPDATE CATEGORIAS SET nombre = ?, descripcion = ?, estado =? WHERE id_categoria = ?");
+            $estadoCategoria = $_POST['estadoCategoria'];
+            $idEstado = ($estadoCategoria == "Activo") ? 1 : 0;
+            $stmt->bind_param("ssii", $_POST['nombreCategoria'], $_POST['descripcionCategoria'],$idEstado, $id);
+        if ($stmt->execute()) {
+            $categoriaID = $mysqli->query("SELECT * FROM CATEGORIAS WHERE id_categoria = $id")->fetch_assoc();
+            cerrarConexion($mysqli);
+            $mensajeExito = "¡Categoría actualizada correctamente! Redirigiendo...";
+            echo "<script>
+                setTimeout(function() {
+                    window.location.href = '/sc502-2c2025-grupo2/view/Administracion/Categorias/categorias.php';
+                }, 2500);
+            </script>";
+        }else {
+                throw new Exception("Sucedió un error al realizar la actualización de la tarea.");
+            }
+        }else {
+
+        }
+    } catch (Exception $e) {
+         echo "Error: " . $e->getMessage();
+    }
+}
+?>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -34,27 +78,27 @@
                 Modificar Categoría
             </div>
             <div class="card-body">
-                <form>
-                    <div class="mb-3">
-                        <label for="idCategoria" class="form-label">ID Categoría</label>
-                        <input type="text" class="form-control" id="idCategoria" value="1" readonly>
+                <?php if (!empty($mensajeExito)): ?>
+                    <div class="alert alert-success">
+                        <?php echo $mensajeExito; ?>
                     </div>
-
+                <?php endif; ?>
+                <form method="POST">
                     <div class="mb-3">
                         <label for="nombreCategoria" class="form-label">Nombre</label>
-                        <input type="text" class="form-control" id="nombreCategoria" placeholder="Ej. Cajuela">
+                        <input type="text" name="nombreCategoria" class="form-control" id="nombreCategoria" value="<?php echo $categoriaID["nombre"] ?>">
                     </div>
 
                     <div class="mb-3">
                         <label for="descripcionCategoria" class="form-label">Descripción</label>
-                        <textarea class="form-control" id="descripcionCategoria" rows="3" placeholder="Descripción de la categoría..."></textarea>
+                        <textarea class="form-control" name="descripcionCategoria" id="descripcionCategoria" rows="3"><?php echo $categoriaID["descripcion"] ?></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label for="estadoCategoria" class="form-label">Estado</label>
-                        <select class="form-select" id="estadoCategoria">
-                            <option value="activo">Activo</option>
-                            <option value="inactivo">Inactivo</option>
+                        <label for="estadoCategoria" class="form-label">Estado </label>
+                        <select class="form-select" name="estadoCategoria" id="estadoCategoria">
+                            <option value="Activo" <?php if ($categoriaID["estado"] == 1) echo 'selected'; ?>>Activo</option>
+                            <option value="Inactivo" <?php if ($categoriaID["estado"] == 0) echo 'selected'; ?>>Inactivo</option>
                         </select>
                     </div>
 

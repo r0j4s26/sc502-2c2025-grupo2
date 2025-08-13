@@ -54,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -77,10 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <i class="fa-solid fa-motorcycle fa-3x text-danger mb-3"></i>
               <h3 class="card-title fw-bold">Iniciar Sesión</h3>
             </div>
-
-
             <form id="loginForm" action="login.php" method="post" novalidate>
- 
               <div class="form-floating mb-3">
                 <input type="email" class="form-control" id="txtEmail" name="txtEmail" placeholder="Correo Electrónico" value="<?= htmlspecialchars($email) ?>" required >
 
