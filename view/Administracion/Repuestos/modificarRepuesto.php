@@ -180,7 +180,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
                             <input type="number" step="0.01" class="form-control" name="precioVenta" id="precio" value="<?= $repuestoID["precioVenta"] ?>">
                         </div>
                     </div>
-
                     <div class="mb-3">
                         <label for="proveedor" class="form-label">Proveedor</label>
                         <select class="form-select" id="proveedor" name="proveedor">

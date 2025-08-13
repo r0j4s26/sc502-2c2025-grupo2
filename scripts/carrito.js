@@ -1,34 +1,60 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const lista = document.getElementById("carrito-list");
-  let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+document.addEventListener('DOMContentLoaded', () => {
 
-  if (carrito.length === 0) {
-    lista.innerHTML = "<p class='text-center'>El carrito está vacío.</p>";
-    return;
+  const params = new URLSearchParams(location.search);
+  const ok = (params.get('ok') || '').toLowerCase();
+  const pedidoId = params.get('id');
+
+  if (ok) {
+    const map = {
+      agregado: { icon: 'success', title: 'Producto agregado al carrito' },
+      quitado: { icon: 'warning', title: 'Producto eliminado' },
+      vaciar: { icon: 'info', title: 'Carrito vaciado' },
+      pedido: { icon: 'success', title: pedidoId ? `¡Pedido #${pedidoId} creado!` : '¡Pedido creado con éxito!' },
+      error: { icon: 'error', title: 'Ocurrió un error' },
+      errorbd: { icon: 'error', title: 'Error de conexión' },
+      vacio: { icon: 'info', title: 'El carrito está vacío' }
+    };
+    const cfg = map[ok];
+    if (cfg) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: cfg.icon,
+        title: cfg.title,
+        showConfirmButton: false,
+        timer: 2200,
+        timerProgressBar: true
+      });
+
+      const url = new URL(location.href);
+      url.searchParams.delete('ok');
+      url.searchParams.delete('id');
+      history.replaceState({}, '', url.toString());
+    }
   }
 
-  carrito.forEach(function (item, index) {
-    const card = document.createElement("div");
-    card.className = "col-md-4 mb-3";
-    card.innerHTML = `
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">${item.nombre}</h5>
-          <p class="card-text">${item.descripcion}</p>
-          <p><strong>₡${item.precio}</strong></p>
-          <button class="btn btn-secondary eliminar-item" data-index="${index}">Eliminar</button>
-        </div>
-      </div>
-    `;
-    lista.appendChild(card);
+
+  document.querySelectorAll('form.needs-confirm').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const accion = form.dataset.accion || '';
+      const texts = {
+        quitar: '¿Quitar este producto del carrito?',
+        vaciar: '¿Vaciar todo el carrito?',
+        finalizar: '¿Confirmar y crear el pedido?'
+      };
+      const res = await Swal.fire({
+        title: 'Confirmar',
+        text: texts[accion] || '¿Estás seguro?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí',
+        cancelButtonText: 'No',
+        reverseButtons: true
+      });
+      if (res.isConfirmed) form.submit();
+    });
   });
 
-  lista.addEventListener("click", function (e) {
-    if (e.target.classList.contains("eliminar-item")) {
-      const index = parseInt(e.target.dataset.index);
-      carrito.splice(index, 1);
-      localStorage.setItem("carrito", JSON.stringify(carrito));
-      location.reload();
-    }
-  });
+
 });

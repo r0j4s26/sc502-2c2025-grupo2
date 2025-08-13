@@ -26,7 +26,8 @@ try{
 }
 
 function cerrarConexion($mysqli){
-    if($mysqli instanceof myqsli){
+    if($mysqli instanceof mysqli){
         $mysqli->close();
     }
 }
+?>

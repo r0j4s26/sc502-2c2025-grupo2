@@ -44,8 +44,7 @@ cerrarConexion($mysqli);
 <body class="bg-light">
     <?php include '../componentes/navbar.php'; ?>
     <div class="container mt-5">
-        <h2 class="mb-4 text-center">Lista de Citas</h2>
-
+        <h2 class="mb-4 text-center">Lista de Citas</h2>    
         <?php if ($citas->num_rows > 0): ?>
             <?php while ($fila = $citas->fetch_assoc()): ?>
                 <?php
