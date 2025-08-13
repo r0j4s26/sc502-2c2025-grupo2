@@ -21,6 +21,31 @@ cerrarConexion($mysqli);
 ?>
 
 <!DOCTYPE html>
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+session_start();
+require_once '../../../accessoDatos/accesoDatos.php';
+
+if(!isset($_SESSION["nombreUsuario"])){
+    echo '<script> 
+        alert("Debe iniciar sesión para acceder a esta página.") 
+        window.location.href = "login.php"
+        </script>';
+}
+
+$mysqli = abrirConexion();
+
+$citas = $mysqli->query("SELECT * from CITAS");
+
+if(!$citas){
+    die("Error en la consulta: " . $mysqli->error);
+}
+
+cerrarConexion($mysqli);
+?>
+
 <html lang="es">
 
 <head>
@@ -78,13 +103,11 @@ cerrarConexion($mysqli);
     </div>
   </div>
 
-  <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-    <!-- Inicializar DataTables -->
     <script>
         $(document).ready(function () {
             $('table').DataTable({

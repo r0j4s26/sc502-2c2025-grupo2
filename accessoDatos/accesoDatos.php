@@ -5,7 +5,7 @@ try{
 
     $host = "127.0.0.1";
     $user = "root";
-    $password = "1234";
+    $password = "BRAYAN21gl";
     $db = "MOTOREPUESTOSROJAS";
 
     $mysqli = new mysqli($host, $user, $password, $db);
