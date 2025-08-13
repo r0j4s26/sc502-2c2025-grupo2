@@ -1,7 +1,13 @@
 <?php
-//aca va el login php
+session_start(); 
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $_SESSION["nombreUsuario"] = $_POST["txtEmail"];
+  header("Location: mototienda.php");
+  exit;
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -28,7 +34,7 @@
               <h3 class="card-title fw-bold">Iniciar Sesión</h3>
             </div>
 
-            <form id="loginForm" action="mototienda.php" method="post">
+            <form id="loginForm" method="post">
               <div class="form-floating mb-3">
                 <input type="email" class="form-control" id="txtEmail" name="txtEmail" placeholder="Correo Electrónico" >
                 <label for="txtEmail"><i class="fas fa-envelope me-2"></i>Correo Electrónico</label>

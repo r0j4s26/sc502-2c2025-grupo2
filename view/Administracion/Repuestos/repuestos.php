@@ -1,4 +1,42 @@
 <!DOCTYPE html>
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+session_start();
+require_once '../../../accessoDatos/accesoDatos.php';
+if (!isset($_SESSION["nombreUsuario"])) {
+    echo '<script> 
+        alert("Debe iniciar sesión para acceder a esta página."); 
+        window.location.href = "login.php"; 
+    </script>';
+    exit; 
+}
+ 
+$mysqli = abrirConexion();
+
+$repuestos = $mysqli->query(
+    "SELECT 
+     P.id_producto as id_producto,
+     P.nombre as nom,
+     P.descripcion as descrip,
+     P.marca as marca,
+     P.costo_unitario as costoU,
+     P.precio_venta as precioV,
+     P.estado as estado,
+     C.nombre as categoria,
+     PR.nombre as proveedor
+     FROM PRODUCTOS P 
+     LEFT JOIN CATEGORIAS C ON P.id_categoria = C.id_categoria
+     JOIN PROVEEDORES PR ON P.id_proveedores = PR.id_proveedores"
+);
+
+if(!$repuestos){
+    die("Error en la consulta: " . $mysqli->error);
+}
+
+cerrarConexion($mysqli);
+?>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -21,48 +59,41 @@
                     <th>Categoría</th>
                     <th>Costo Unitario</th>
                     <th>Precio Venta</th>
+                    <th>Proveedor</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Filtro de aceite</td>
-                    <td>Filtro para motor de 4 cilindros</td>
-                    <td>ACDelco</td>
-                    <td>Motor</td>
-                    <td>₡2,500</td>
-                    <td>₡4,000</td>
-                    <td>Activo</td>
-                    <td class="text-center">
-                        <a href="modificarRepuesto.php" class="btn btn-warning btn-sm me-2">Modificar</a>
-                        <a href="" class="btn btn-danger btn-sm">Eliminar</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Batería 12V</td>
-                    <td>Batería para vehículo liviano</td>
-                    <td>Yuasa</td>
-                    <td>Eléctrico</td>
-                    <td>₡20,000</td>
-                    <td>₡35,000</td>
-                    <td>Activo</td>
-                    <td class="text-center">
-                        <a href="modificarRepuesto.php" class="btn btn-warning btn-sm me-2">Modificar</a>
-                        <a href="" class="btn btn-danger btn-sm">Eliminar</a>
-                    </td>
-                </tr>
+                <?php while($fila = $repuestos->fetch_assoc()):?>
+                    <tr>
+                        <td><?= $fila['nom']?></td>
+                        <td><?= $fila['descrip']?></td>
+                        <td><?= $fila['marca']?></td>
+                        <td><?= $fila['categoria'] ?? 'No asignada' ?></td>
+                        <td><?= $fila['costoU']?></td>
+                        <td><?= $fila['precioV']?></td>
+                        <td><?= $fila['proveedor']?></td>
+                        <td>
+                            <?php if ($fila['estado'] == 1):?>
+                                Activo
+                            <?php else:?> 
+                                Inactivo
+                            <?php endif;?>
+                        </td>
+                        <td class="text-center">
+                            <a href="modificarRepuesto.php?id_producto=<?= $fila['id_producto'] ?>" class="btn btn-primary btn-sm">Modificar</a>
+                        </td>
+                    </tr>
+                <?php endwhile;?>
             </tbody>
         </table>
-
         <div class="text-center mb-3">
             <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNuevoRepuesto">
                 <i class="fas fa-plus"></i>Agregar nuevo repuesto
             </button>
         </div>
-
         <?php include 'agregarRepuesto.php'; ?>
 
-    </div>
 </body>
 </html>

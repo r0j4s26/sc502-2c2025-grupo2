@@ -1,33 +1,135 @@
-<div class="modal fade" id="modalAgregarCategoria" >
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form>
-        <div class="modal-header " style="background-color:#8B0000;">
-          <h5 class="modal-title text-white" id="modalAgregarCategoriaLabel">Agregar Nueva Categoría</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+<?php
+if (!isset($_SESSION["nombreUsuario"])) {
+    echo '<script> 
+        alert("Debe iniciar sesión para acceder a esta página."); 
+        window.location.href = "../login.php"; 
+    </script>';
+    exit();
+}
+
+$mysqli = abrirConexion();
+
+$mensajeExito = "";
+$mensajeErrorNombre = "";
+$mensajeErrorDescripcion = "";
+$mensajeErrorEstado = "";
+$mensajeError = "";
+
+$nombre = "";
+$descripcion = "";
+$idEstado = "";
+
+$enviado = isset($_POST['submitAgregarCategoria']);
+
+if ($enviado) {
+    try {
+        $nombre = trim($_POST["nombre"] ?? '');
+        $descripcion = trim($_POST["descripcion"] ?? '');
+        $idEstado = $_POST["idEstado"] ?? '';
+
+        if (strlen($nombre) < 3 || strlen($nombre) > 50) {
+            $mensajeErrorNombre = 'El nombre debe contener entre 3 y 50 caracteres.';
+        }
+        if (strlen($descripcion) < 10 || strlen($descripcion) > 500) {
+            $mensajeErrorDescripcion = 'La descripción debe contener entre 10 y 500 caracteres.';
+        }
+        if ($idEstado !== '1' && $idEstado !== '0') {
+            $mensajeErrorEstado = 'Debe seleccionar un estado válido.';
+        }
+
+        if (empty($mensajeErrorNombre) && empty($mensajeErrorDescripcion) && empty($mensajeErrorEstado)) {
+            $stmt = $mysqli->prepare("INSERT INTO categorias (nombre, descripcion, estado) VALUES (?, ?, ?)");
+            $estadoInt = (int)$idEstado;
+            $stmt->bind_param("ssi", $nombre, $descripcion, $estadoInt);
+
+            if ($stmt->execute()) {
+                $mensajeExito = "¡Categoría agregada exitosamente! Redirigiendo al listado...";
+            } else {
+                $mensajeError = "Error al insertar la categoría: " . $stmt->error;
+            }
+        }
+    } catch (Exception $e) {
+        $mensajeError = "Ocurrió un error: " . $e->getMessage();
+    }
+}
+
+cerrarConexion($mysqli);
+?>
+
+<div class="modal fade" id="modalAgregarCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" novalidate>
+                <div class="modal-header" style="background-color:#8B0000;">
+                    <h5 class="modal-title text-white">Agregar Nueva Categoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <?php if (!empty($mensajeError)): ?>
+                        <div class="alert alert-danger" role="alert"><?= $mensajeError ?></div>
+                    <?php endif; ?>
+
+                    <div class="mb-3">
+                        <label for="nombreCategoria" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombreCategoria" name="nombre" value="<?= $nombre ?>">
+                        <?php if ($enviado && !empty($mensajeErrorNombre)): ?>
+                            <div class="alert alert-danger mt-2"><?= $mensajeErrorNombre ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descripcionCategoria" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcionCategoria" rows="3" name="descripcion"><?= $descripcion ?></textarea>
+                        <?php if ($enviado && !empty($mensajeErrorDescripcion)): ?>
+                            <div class="alert alert-danger mt-2"><?= $mensajeErrorDescripcion ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="estadoCategoria" class="form-label">Estado</label>
+                        <select class="form-select" id="estadoCategoria" name="idEstado">
+                            <option value="">Seleccione...</option>
+                            <option value="1" <?= ($idEstado === '1') ? 'selected' : '' ?>>Activo</option>
+                            <option value="0" <?= ($idEstado === '0') ? 'selected' : '' ?>>Inactivo</option>
+                        </select>
+                        <?php if ($enviado && !empty($mensajeErrorEstado)): ?>
+                            <div class="alert alert-danger mt-2"><?= $mensajeErrorEstado ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if (!empty($mensajeExito)): ?>
+                        <div class="alert alert-success mt-3 text-center"><?= $mensajeExito ?></div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                setTimeout(function() {
+                                    window.location.href = 'categorias.php';
+                                }, 3000);
+                            });
+                        </script>
+                    <?php endif; ?>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success" name="submitAgregarCategoria">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-              <label for="nombreCategoria" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="nombreCategoria" required>
-          </div>
-          <div class="mb-3">
-              <label for="descripcionCategoria" class="form-label">Descripción</label>
-              <textarea class="form-control" id="descripcionCategoria" rows="3" required></textarea>
-          </div>
-          <div class="mb-3">
-              <label for="estadoCategoria" class="form-label">Estado</label>
-              <select class="form-select" id="estadoCategoria" required>
-                  <option value="activo">Activo</option>
-                  <option value="inactivo">Inactivo</option>
-              </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Guardar</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
+
+<?php
+
+$hayErroresOMensajeExito = $enviado && (!empty($mensajeErrorNombre) || !empty($mensajeErrorDescripcion) || !empty($mensajeErrorEstado) || !empty($mensajeError) || !empty($mensajeExito));
+?>
+<?php if ($hayErroresOMensajeExito): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modalEl = document.getElementById('modalAgregarCategoria');
+    if (modalEl) {
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+});
+</script>
+<?php endif; ?>

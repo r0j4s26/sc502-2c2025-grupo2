@@ -1,4 +1,29 @@
 <!DOCTYPE html>
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+session_start();
+require_once '../../../accessoDatos/accesoDatos.php';
+
+if(!isset($_SESSION["nombreUsuario"])){
+    echo '<script> 
+        alert("Debe iniciar sesión para acceder a esta página.") 
+        window.location.href = "login.php"
+        </script>';
+}
+
+$mysqli = abrirConexion();
+
+$citas = $mysqli->query("SELECT * from CITAS");
+
+if(!$citas){
+    die("Error en la consulta: " . $mysqli->error);
+}
+
+cerrarConexion($mysqli);
+?>
+
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -16,34 +41,28 @@
       <table class="table table-bordered table-hover align-middle">
         <thead class="table-dark text-center">
           <tr>
-            <th scope="col">Fecha</th>
-            <th scope="col">Hora</th>
-            <th scope="col">Estado</th>
-            <th scope="col">Motivo</th>
-            <th scope="col">Acciones</th>
+            <th>Id Cita</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Estado</th>
+            <th>Motivo</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody class="text-center">
-          <tr>
-            <td>2025-07-12</td>
-            <td>10:30 AM</td>
-            <td><span class="badge bg-success">Confirmada</span></td>
-            <td>Pintura de parachoques</td>
-            <td>
-              <a href="modificarCita.php" class="btn btn-sm btn-primary me-2">Modificar</a>
-              <button class="btn btn-sm btn-danger">Eliminar</button>
-            </td>
-          </tr>
-          <tr>
-            <td>2025-07-14</td>
-            <td>2:00 PM</td>
-            <td><span class="badge bg-warning text-dark">Pendiente</span></td>
-            <td>Cambio de guardabarros</td>
-            <td>
-              <a href="modificarCita.php" class="btn btn-sm btn-primary me-2">Modificar</a>
-              <button class="btn btn-sm btn-danger">Eliminar</button>
-            </td>
-          </tr>
+          <?php while ($fila = $citas->fetch_assoc()):?>
+            <tr>
+                <td><?= $fila['id_cita']?></td>
+                <td><?= $fila['fecha']?></td>
+                <td><?= $fila['hora']?></td>
+                <td><span class="badge bg-success"><?= $fila['estado']?></span></td>
+                <td><?= $fila['motivo']?></td>
+                <td>
+                  <a href="eliminarUsuario.php?id_cliente=<?php echo $fila['id_cita']?>" class="btn btn-danger btn-sm">Eliminar</a>
+                  <a href="modificarUsuario.php?id_cliente=<?php echo $fila['id_cita']?>" class="btn btn-primary btn-sm">Modificar</a>
+                </td>
+            </tr>
+          <?php endwhile;?>
         </tbody>
       </table>
     </div>
