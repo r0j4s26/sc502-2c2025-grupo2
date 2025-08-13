@@ -6,7 +6,6 @@ if (!isset($_SESSION['carrito']) || !is_array($_SESSION['carrito'])) {
   $_SESSION['carrito'] = [];
 }
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $accion = $_POST['accion'] ?? '';
 
@@ -15,13 +14,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre'] ?? '');
     $precio = (float)($_POST['precio'] ?? 0);
     $cantidad = max(1, (int)($_POST['cantidad'] ?? 1));
+
     if ($id > 0 && $nombre !== '' && $precio >= 0) {
       $encontrado = false;
       foreach ($_SESSION['carrito'] as &$it) {
-        if ($it['id_producto'] === $id) { $it['cantidad'] += $cantidad; $encontrado = true; break; }
+        if ($it['id_producto'] === $id) { 
+          $it['cantidad'] += $cantidad; 
+          $encontrado = true; 
+          break; 
+        }
       }
+      unset($it); // <- importante si usaste &
+
       if (!$encontrado) {
-        $_SESSION['carrito'][] = ['id_producto'=>$id,'nombre'=>$nombre,'precio'=>$precio,'cantidad'=>$cantidad];
+        $_SESSION['carrito'][] = [
+          'id_producto'=>$id,
+          'nombre'=>$nombre,
+          'precio'=>$precio,
+          'cantidad'=>$cantidad
+        ];
       }
     }
     header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=agregado'); exit;
@@ -40,92 +51,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['carrito'] = [];
     header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=vaciar'); exit;
   }
+
   if ($accion === 'finalizar') {
-  if (empty($_SESSION['carrito'])) {
-    header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=vacio'); exit;
-  }
+    if (empty($_SESSION['carrito'])) {
+      header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=vacio'); exit;
+    }
 
- 
-  $total = 0.0;
-  foreach ($_SESSION['carrito'] as $it) {
-    $total += (float)$it['precio'] * (int)$it['cantidad'];
-  }
-
-
-  $idCliente = isset($_SESSION['id_cliente']) ? (int)$_SESSION['id_cliente'] : 1;
-
-  $conn = abrirConexion();
-  if (!$conn) { header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=errorbd'); exit; }
-
-  $conn->begin_transaction();
-  try {
-    
-    $sqlPedido = "INSERT INTO PEDIDOS (fecha_pedido, fecha_entrega, direccion_entrega, total, estado, id_cliente)
-                  VALUES (NOW(), NULL, NULL, ?, 'Pendiente', ?)";
-    $stPedido = $conn->prepare($sqlPedido);
-    $stPedido->bind_param('di', $total, $idCliente);
-    $stPedido->execute();
-    $idPedido = $conn->insert_id;
-    $stPedido->close();
-
-  
-    $stCosto = $conn->prepare("SELECT costo_unitario FROM PRODUCTOS WHERE id_producto = ?");
-    $stDet   = $conn->prepare("INSERT INTO DETALLE_PRODUCTOS_PEDIDOS (id_pedido, id_producto, coste_unitario, cantidad)
-                               VALUES (?, ?, ?, ?)");
-   
-    $stInv   = $conn->prepare("UPDATE INVENTARIO 
-                               SET cantidad_disponible = GREATEST(cantidad_disponible - ?, 0),
-                                   stock_total        = GREATEST(stock_total - ?, 0)
-                               WHERE id_producto = ?");
+    // Snapshot de checkout para evitar manipulación del POST
+    $items = [];
+    $total = 0.0;
 
     foreach ($_SESSION['carrito'] as $it) {
       $idProd   = (int)$it['id_producto'];
+      $nombre   = (string)$it['nombre'];
+      $precio   = (float)$it['precio'];
       $cantidad = (int)$it['cantidad'];
 
-      
-      $stCosto->bind_param('i', $idProd);
-      $stCosto->execute();
-      $res = $stCosto->get_result();
-      $row = $res->fetch_assoc();
-      $costoU = isset($row['costo_unitario']) ? (float)$row['costo_unitario'] : (float)$it['precio'];
+      $sub = $precio * $cantidad;
+      $total += $sub;
 
-      
-      $stDet->bind_param('iidi', $idPedido, $idProd, $costoU, $cantidad);
-      $stDet->execute();
-
-      $stInv->bind_param('iii', $cantidad, $cantidad, $idProd);
-      $stInv->execute();
+      $items[] = [
+        'id_producto' => $idProd,
+        'nombre'      => $nombre,
+        'precio'      => $precio,
+        'cantidad'    => $cantidad,
+        'subtotal'    => $sub,
+      ];
     }
-    $stCosto->close();
-    $stDet->close();
-    $stInv->close();
 
-    $metodo = 'Efectivo'; $estadoFactura = 1;
-    $stFac = $conn->prepare("INSERT INTO FACTURAS (fecha_factura, total, metodo_pago, estado, id_pedido)
-                             VALUES (NOW(), ?, ?, ?, ?)");
-    $stFac->bind_param('dsii', $total, $metodo, $estadoFactura, $idPedido);
-    $stFac->execute();
-    $stFac->close();
+    $_SESSION['checkout'] = [
+      'items'     => $items,
+      'total'     => $total,
+      'moneda'    => 'CRC',
+      'timestamp' => time(),
+    ];
 
- 
-    $conn->commit();
-    cerrarConexion($conn);
-    $_SESSION['carrito'] = [];
-    $_SESSION['last_pedido_id'] = $idPedido;
-
-    header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=pedido&id=' . $idPedido); exit;
-
-  } catch (Throwable $e) {
-    $conn->rollback();
-    cerrarConexion($conn);
-    header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=error'); exit;
+    // Aquí debe ir la página para elegir el método, NO procesar todavía
+    header('Location: /sc502-2c2025-grupo2/view/usuarios/pago.php'); 
+    exit;
   }
 }
 
+$total = 0.0; 
+foreach ($_SESSION['carrito'] as $it) { 
+  $total += $it['precio'] * $it['cantidad']; 
 }
-
-
-$total = 0.0; foreach ($_SESSION['carrito'] as $it) { $total += $it['precio'] * $it['cantidad']; }
 ?>
 <!DOCTYPE html>
 <html lang="es">
