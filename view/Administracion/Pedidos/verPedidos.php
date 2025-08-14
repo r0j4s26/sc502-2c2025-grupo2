@@ -56,6 +56,7 @@ cerrarConexion($mysqli);
                         <th>Total</th>
                         <th>Estado</th>
                         <th>Email de cliente</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,6 +69,9 @@ cerrarConexion($mysqli);
                             <td><?= $fila['total']?></td>
                             <td><?= $fila['estado']?></td>
                             <td><?= $fila['email']?></td>
+                            <td>
+                                <a href="verProductos.php?id=<?= $fila['id'] ?>" class="btn btn-sm btn-primary me-2">Ver detalle</a>
+                            </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
