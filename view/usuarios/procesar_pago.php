@@ -7,9 +7,6 @@ if (empty($_SESSION['checkout']['items'])) {
   header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=vacio'); exit;
 }
 
-
-
-
 $metodo = null;
 if (!empty($_POST['mp_efectivo'])) {
   $metodo = 'Efectivo';
@@ -49,7 +46,7 @@ if ($metodo === 'Tarjeta') {
     $errors[] = 'El nombre en la tarjeta es demasiado corto.';
   }
 }
-
+ 
 if ($metodo === 'SINPE') {
   if ($sinpe_ref === '') {
     $errors[] = 'Debés ingresar la referencia de la transferencia SINPE.';
@@ -79,7 +76,7 @@ if (!empty($errors)) {
 
 $items    = $_SESSION['checkout']['items'];
 $total    = (float)$_SESSION['checkout']['total'];
-$idCliente = isset($_SESSION['id_cliente']) ? (int)$_SESSION['id_cliente'] : 1;
+$idCliente = isset($_SESSION['idUsuario']) ? (int)$_SESSION['idUsuario'] : 1;
 
 
 $conn = abrirConexion();
@@ -92,85 +89,68 @@ if (!$conn) {
 $conn->begin_transaction();
 try {
 
+    $sqlPedido = "INSERT INTO PEDIDOS (fecha_entrega, direccion, total, id_cliente)
+                  VALUES (DATE_ADD(NOW(), INTERVAL 3 DAY), ?, ?, ?)";
+    $stPedido = $conn->prepare($sqlPedido);
+    $stPedido->bind_param('sdi', $direccion, $total, $idCliente);
 
-$sqlPedido = "INSERT INTO PEDIDOS (fecha_entrega, direccion, total, id_cliente)
-              VALUES (DATE_ADD(NOW(), INTERVAL 3 DAY), ?, ?, ?)";
-$stPedido = $conn->prepare($sqlPedido);
-$stPedido->bind_param('sdi', $direccion, $total, $idCliente);
+    if (!empty($_SESSION['checkout']['items']) && $stPedido->execute()) {
+        $idPedido = $conn->insert_id;
+        $sqlUpProd = "UPDATE PRODUCTOS SET stock = stock - ? WHERE id_producto = ?;";
+        $sqlInProd = "INSERT INTO DETALLE_PRODUCTOS_PEDIDOS (id_pedido, id_producto, precio, sub_total, cantidad) VALUES (?, ?, ?, ?, ?)";
+        $stUpProd = $conn->prepare($sqlUpProd);
+        $stInProd = $conn->prepare($sqlInProd);
 
+        foreach ($_SESSION['checkout']['items'] as $it) {
+            $idProd   = (int)$it['id_producto'];
+            $cantidad = (int)$it['cantidad'];
+            $subTotal = (float)$it['subtotal'];
+            $precio   = (float)$it['precio'];
 
-  
+            try {
+                $stInProd->bind_param('iiddi', $idPedido, $idProd, $precio, $subTotal, $cantidad);
+                $stUpProd->bind_param('ii', $cantidad, $idProd);
 
-  if (!empty($_SESSION['checkout']['items']) && $stPedido->execute()) {
-      $idPedido = $conn->insert_id;
-      $sqlUpProd = "UPDATE PRODUCTOS SET stock = stock - ? WHERE id_producto = ?;";
-      $stUpProd = $conn->prepare($sqlUpProd);
+                $stUpProd->execute();
+                $stInProd->execute();
+            } catch(Exception $e) {
+                error_log("Error al actualizar stock: " . $e->getMessage());
+                throw $e; 
+            }
+        }
 
-      foreach ($_SESSION['checkout']['items'] as $it) {
-          $idProd   = (int)$it['id_producto'];
-          $cantidad = (int)$it['cantidad'];
-          try {
-              $stUpProd->bind_param('ii', $cantidad, $idProd);
-              $stUpProd->execute();
-          } catch(Exception $e) {
-              error_log("Error al actualizar stock: " . $e->getMessage());
-              throw $e; 
-          }
-      }
-      $stUpProd->close();
-  }
+        $stUpProd->close();
+        $stInProd->close();
+    }
 
+    $stPedido->close();
 
-  $stPedido->close();
+    $estadoFactura = 1;
+    $stFac = $conn->prepare("INSERT INTO FACTURAS (fecha_factura, total, metodo_pago, estado, id_pedido)
+                             VALUES (NOW(), ?, ?, ?, ?)");
+    $stFac->bind_param('dsii', $total, $metodo, $estadoFactura, $idPedido);
+    $stFac->execute();
+    $stFac->close();
 
+    $conn->commit();
+    cerrarConexion($conn);
 
-  $stCosto = $conn->prepare("SELECT costo_unitario FROM PRODUCTOS WHERE id_producto = ?");
-  $stDet   = $conn->prepare("INSERT INTO DETALLE_PRODUCTOS_PEDIDOS (id_pedido, id_producto, coste_unitario, cantidad)
-                             VALUES (?, ?, ?, ?)");
-  $stInv   = $conn->prepare("UPDATE INVENTARIO 
-                             SET cantidad_disponible = GREATEST(cantidad_disponible - ?, 0),
-                                 stock_total        = GREATEST(stock_total - ?, 0)
-                             WHERE id_producto = ?");
+    $_SESSION['carrito'] = [];
+    $_SESSION['checkout'] = null;
+    $_SESSION['last_pedido_id'] = $idPedido;
 
-  foreach ($items as $it) {
-    $idProd   = (int)$it['id_producto'];
-    $cantidad = (int)$it['cantidad'];
-
-    $stCosto->bind_param('i', $idProd);
-    $stCosto->execute();
-    $res = $stCosto->get_result();
-    $row = $res->fetch_assoc();
-    $costoU = isset($row['costo_unitario']) ? (float)$row['costo_unitario'] : (float)$it['precio'];
-
-    $stDet->bind_param('iidi', $idPedido, $idProd, $costoU, $cantidad);
-    $stDet->execute();
-
-    $stInv->bind_param('iii', $cantidad, $cantidad, $idProd);
-    $stInv->execute();
-  }
-  $stCosto->close(); $stDet->close(); $stInv->close();
-
-  $estadoFactura = 1;
-  $stFac = $conn->prepare("INSERT INTO FACTURAS (fecha_factura, total, metodo_pago, estado, id_pedido)
-                           VALUES (NOW(), ?, ?, ?, ?)");
-  $stFac->bind_param('dsii', $total, $metodo, $estadoFactura, $idPedido);
-  $stFac->execute();
-  $stFac->close();
-
-  $conn->commit();
-  cerrarConexion($conn);
-
-
-  $_SESSION['carrito'] = [];
-  $_SESSION['checkout'] = null;
-  $_SESSION['last_pedido_id'] = $idPedido;
-
-  header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=pedido&id='.$idPedido); exit;
+    header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=pedido&id='.$idPedido); 
+    exit;
 
 } catch (Throwable $e) {
-  $conn->rollback();
-  cerrarConexion($conn);
-  $_SESSION['errors'] = ['Ocurrió un error al procesar el pago. Intentalo de nuevo.'];
-  $_SESSION['old'] = $_POST;
-  header('Location: /sc502-2c2025-grupo2/view/usuarios/pago.php'); exit;
+    $conn->rollback();
+    cerrarConexion($conn);
+    // Guardar el mensaje real del error
+    $_SESSION['errors'] = [
+        'Ocurrió un error al procesar el pago. Intentalo de nuevo.',
+        'Detalle técnico: ' . $e->getMessage()
+    ];
+    $_SESSION['old'] = $_POST;
+    header('Location: /sc502-2c2025-grupo2/view/usuarios/pago.php'); 
+    exit;
 }

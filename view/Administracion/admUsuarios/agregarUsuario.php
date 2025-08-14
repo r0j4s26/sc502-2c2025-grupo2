@@ -53,7 +53,6 @@ cerrarConexion($mysqli);
               <div class="alert alert-danger"><?= $mensajeError ?></div>
             <?php endif; ?>
 
-            <!-- Campos de formulario -->
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <input type="text" class="form-control <?= !empty($mensajeErrorNombre)?'is-invalid':'' ?>" name="nombre" value="<?= $nombre ?>">

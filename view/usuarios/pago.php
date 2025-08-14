@@ -179,7 +179,7 @@ document.getElementById('btnTarjeta').addEventListener('click', async () => {
   document.getElementById('formPago').submit();
 });
 
-
+ 
 
 
     
