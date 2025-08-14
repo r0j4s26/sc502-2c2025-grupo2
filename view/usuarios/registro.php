@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Verificar si el correo ya existe
-        $stmtCheck = $mysqli->prepare("SELECT id_cliente FROM CLIENTES WHERE email = ?");
+        $stmtCheck = $mysqli->prepare("SELECT id_cliente FROM USUARIOS WHERE email = ?");
         $stmtCheck->bind_param("s", $email);
         $stmtCheck->execute();
         $stmtCheck->store_result();
@@ -61,13 +61,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtCheck->close();
 
         // Insertar cliente
-        $stmt = $mysqli->prepare("INSERT INTO CLIENTES (nombre, apellidos, telefono, email, contrasena) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $mysqli->prepare("INSERT INTO USUARIOS (nombre, apellidos, telefono, email, contrasena) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param('sssss', $nombre, $apellidos, $telefono, $email, $contrasennaHash);
 
         if ($stmt->execute()) {
             $stmt->close();
             cerrarConexion($mysqli);
-            mostrarAlerta('success', 'Cuenta creada con éxito. Inicie sesión.', 'login.php');
+            mostrarAlerta('success', 'Cuenta creada con éxito. Inicie sesión.', 'index.php');
         } else {
             mostrarAlerta('error', 'Error al registrar: ' . $stmt->error);
         }
@@ -147,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
               <p class="text-center mt-4 mb-0">
                 ¿Ya tienes una cuenta?
-                <a href="login.php" class="fw-bold text-danger text-decoration-none link-hover">Inicia sesión aquí</a>
+                <a href="index.php" class="fw-bold text-danger text-decoration-none link-hover">Inicia sesión aquí</a>
               </p>
             </form>
           </div>

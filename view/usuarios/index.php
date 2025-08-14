@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensaje = 'Error al conectar a la base de datos.';
             $tipoAlerta = 'error';
         } else {
-            $sql = "SELECT id_cliente, contrasena, nombre, apellidos FROM CLIENTES WHERE email = ? LIMIT 1";
+            $sql = "SELECT id_cliente, contrasena, nombre, apellidos FROM USUARIOS WHERE email = ? LIMIT 1";
             $stmt = $mysqli->prepare($sql);
             $stmt->bind_param('s', $email);
             $stmt->execute();
@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <i class="fa-solid fa-motorcycle fa-3x text-danger mb-3"></i>
               <h3 class="card-title fw-bold">Iniciar Sesión</h3>
             </div>
-            <form id="loginForm" action="login.php" method="post" novalidate>
+            <form id="loginForm" method="post" novalidate>
               <div class="form-floating mb-3">
                 <input type="email" class="form-control" id="txtEmail" name="txtEmail" placeholder="Correo Electrónico" value="<?= htmlspecialchars($email) ?>" required >
 

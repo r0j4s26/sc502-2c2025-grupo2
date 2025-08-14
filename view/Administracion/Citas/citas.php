@@ -9,7 +9,7 @@ $mysqli = abrirConexion();
 
 $resultado = $mysqli->query("SELECT c.*, CONCAT(cl.nombre, ' ', cl.apellidos) AS nombre_completo 
         FROM CITAS c
-        INNER JOIN CLIENTES cl ON c.id_cliente = cl.id_cliente
+        INNER JOIN USUARIOS cl ON c.id_cliente = cl.id_cliente
         ORDER BY c.fecha");
 
 if (!$resultado) {
@@ -45,7 +45,7 @@ if(!$citas){
 
 cerrarConexion($mysqli);
 ?>
-
+ 
 <html lang="es">
 
 <head>
@@ -61,11 +61,12 @@ cerrarConexion($mysqli);
   <?php include '../../componentes/navbar.php'; ?>
 
   <div class="container mt-5">
-    <h2 class="mb-4 text-center">Listado de Citas</h2>
-      <div class="d-flex mb-3">
-        <a href="agregarCitas.php" class="btn btn-danger">Agendar Cita</a>
-      </div>
-
+  <h2 class="mb-4 text-center">Lista de Citas</h2>
+    <div class="d-flex justify-content-center mb-4">
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalAgendarCita">
+            <i class="fas fa-plus"></i> Agendar cita
+        </button>
+    </div>
     <div class="table-responsive">
       <table class="table table-bordered table-hover align-middle">
 
@@ -91,8 +92,8 @@ cerrarConexion($mysqli);
               <td><?php echo $u['motivo'] ?></td>
               <td><?php echo $u['nombre_completo'] ?></td>
               <td>
-                <a href="modificarCitas.php?id=<?php echo $u['id_cita'] ?>" class="btn btn-sm btn-primary me-2">Modificar</a>
                 <a href="eliminarCitas.php?id=<?php echo $u['id_cita'] ?>" onclick="return confirm('Desea eliminar la cita?')" class="btn btn-sm btn-danger">Eliminar</a>
+                <a href="modificarCitas.php?id=<?php echo $u['id_cita'] ?>" class="btn btn-sm btn-primary me-2">Modificar</a>
               </td>
             </tr>
 
@@ -115,6 +116,11 @@ cerrarConexion($mysqli);
                     url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
                 }
             });
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            if (performance.getEntriesByType("navigation")[0].type === "reload") {
+                window.location.href = "citas.php"; 
+            }
         });
     </script>
 </body>

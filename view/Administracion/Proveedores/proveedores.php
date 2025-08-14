@@ -16,7 +16,7 @@ if (!$resultado) {
 cerrarConexion($mysqli);
 
 ?>
-
+ 
 <!DOCTYPE html>
 <html lang="en">
 
@@ -35,7 +35,7 @@ cerrarConexion($mysqli);
 
     <div class="container mt-5">
         <h2 class="mb-4 text-center">Lista de Proveedores</h2>
-        <div class="d-flex mb-3">
+        <div class="d-flex justify-content-center mb-4">
             <a href="agregarProveedores.php" class="btn btn-danger">Agregar Proveedor</a>
         </div>
 
@@ -65,8 +65,8 @@ cerrarConexion($mysqli);
                         <td><?php echo $u['metodo_pago'] ?> </td>
                         <td><?php echo $u['estado'] ?> </td>
                         <td>
-                            <a href="modificarProveedores.php?id=<?php echo $u['id_proveedor'] ?>" class="btn btn-outline-primary">Modificar</a>
-                            <a href="eliminarProveedores.php?id=<?php echo $u['id_proveedor'] ?>" onclick="return confirm('Desea eliminar el proveedor?')" class="btn btn-outline-danger">Eliminar</a>
+                            <a href="eliminarProveedores.php?id=<?php echo $u['id_proveedor'] ?>" onclick="return confirm('Desea eliminar el proveedor?')" class="btn btn-sm btn-danger">Eliminar</a>
+                            <a href="modificarProveedores.php?id=<?php echo $u['id_proveedor'] ?>" class="btn btn-sm btn-primary me-1">Modificar</a>
                         </td>
                     </tr>
 
@@ -75,13 +75,11 @@ cerrarConexion($mysqli);
         </table>
     </div>
 
-    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-    <!-- Inicializar DataTables -->
     <script>
         $(document).ready(function () {
             $('table').DataTable({
@@ -89,6 +87,12 @@ cerrarConexion($mysqli);
                     url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
                 }
             });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (performance.getEntriesByType("navigation")[0].type === "reload") {
+                window.location.href = "proveedores.php"; 
+            }
         });
     </script>
     
