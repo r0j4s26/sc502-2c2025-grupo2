@@ -189,8 +189,8 @@ document.getElementById('btnTarjeta').addEventListener('click', async () => {
         title: 'Pago por SINPE',
         html: `
           <div class="text-start">
-            <p class="mb-2">Transferí el total a nuestro SINPE Móvil <strong>8X-XX-XX-XX</strong> y (opcional) indicá la referencia:</p>
-            <input id="sw_sinpe" class="swal2-input" placeholder="Referencia/ID (opcional)">
+            <p class="mb-2">Transferí el total vía SINPE Móvil <strong>XXXX-XXXX</strong></p>
+            <input id="sw_sinpe" class="swal2-input" placeholder="Número Celular">
           </div>
         `,
         input: null,
