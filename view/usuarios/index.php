@@ -21,19 +21,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensaje = 'Error al conectar a la base de datos.';
             $tipoAlerta = 'error';
         } else {
-            $sql = "SELECT id_cliente, contrasena, nombre, apellidos FROM USUARIOS WHERE email = ? LIMIT 1";
+            $sql = "SELECT id_cliente, contrasena, nombre, apellidos, rol FROM USUARIOS WHERE email = ? LIMIT 1";
             $stmt = $mysqli->prepare($sql);
             $stmt->bind_param('s', $email);
             $stmt->execute();
             $stmt->store_result();
 
             if ($stmt->num_rows === 1) {
-                $stmt->bind_result($idCliente, $hash, $nombre, $apellidos);
+                $stmt->bind_result($idCliente, $hash, $nombre, $apellidos, $rol);
                 $stmt->fetch();
 
                 if (password_verify($password, $hash)) {
-                    $_SESSION['idCliente'] = $idCliente;
-                    $_SESSION['nombreCompleto'] = $nombre . ' ' . $apellidos;
+                    $_SESSION['idUsuario'] = $idCliente;
+                    $_SESSION['nombreUsuario'] = $nombre . ' ' . $apellidos;
+                    $_SESSION['rol'] = $rol;
                     header('Location: mototienda.php');
                     exit;
                 } else {

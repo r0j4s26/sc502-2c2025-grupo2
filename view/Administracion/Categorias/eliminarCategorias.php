@@ -1,5 +1,7 @@
 <?php
+session_start();
 require_once '../../../accessoDatos/accesoDatos.php';
+require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 $mysqli = abrirConexion();
 
 $id = $_GET['id'] ?? null;

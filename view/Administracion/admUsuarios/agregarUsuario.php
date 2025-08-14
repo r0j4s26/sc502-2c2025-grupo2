@@ -1,11 +1,5 @@
 <?php
-if (!isset($_SESSION["nombreUsuario"])) {
-    echo '<script>
-        alert("Debe iniciar sesión para acceder a esta página.");
-        window.location.href = "../login.php";
-    </script>';
-    exit();
-}
+require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 
 $mysqli = abrirConexion();
 
@@ -83,45 +77,45 @@ cerrarConexion($mysqli);
 
             <div class="mb-3">
                 <label for="nombreUsuario" class="form-label">Nombre</label>
-                <input type="text" class="form-control" id="nombreUsuario" name="nombre" value="<?= htmlspecialchars($nombre) ?>">
+                <input type="text" class="form-control <?= !empty($mensajeErrorNombre) ? 'is-invalid' : '' ?>" id="nombreUsuario" name="nombre" value="<?= $nombre ?>">
                 <?php if ($enviado && !empty($mensajeErrorNombre)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorNombre ?></div>
+                    <div class="invalid-feedback mt-2"><?= $mensajeErrorNombre ?></div>
                 <?php endif; ?>
             </div>
 
             <div class="mb-3">
                 <label for="apellidosUsuario" class="form-label">Apellidos</label>
-                <input type="text" class="form-control" id="apellidosUsuario" name="apellidos" value="<?= htmlspecialchars($apellidos) ?>">
+                <input type="text" class="form-control <?= !empty($mensajeErrorApellidos) ? 'is-invalid' : '' ?>" id="apellidosUsuario" name="apellidos" value="<?= $apellidos ?>">
                 <?php if ($enviado && !empty($mensajeErrorApellidos)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorApellidos ?></div>
+                    <div class="invalid-feedback mt-2"><?= $mensajeErrorApellidos ?></div>
                 <?php endif; ?>
             </div>
 
             <div class="mb-3">
                 <label for="telefonoUsuario" class="form-label">Teléfono</label>
-                <input type="text" class="form-control" id="telefonoUsuario" name="telefono" value="<?= htmlspecialchars($telefono) ?>">
+                <input type="text" class="form-control <?= !empty($mensajeErrorTelefono) ? 'is-invalid' : '' ?>" id="telefonoUsuario" name="telefono" value="<?= $telefono ?>">
                 <?php if ($enviado && !empty($mensajeErrorTelefono)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorTelefono ?></div>
+                    <div class="invalid-feedback mt-2"><?= $mensajeErrorTelefono ?></div>
                 <?php endif; ?>
             </div>
 
             <div class="mb-3">
                 <label for="emailUsuario" class="form-label">Email</label>
-                <input type="email" class="form-control" id="emailUsuario" name="email" value="<?= htmlspecialchars($email) ?>">
+                <input type="email" class="form-control <?= !empty($mensajeErrorEmail) ? 'is-invalid' : '' ?>" id="emailUsuario" name="email" value="<?= $email ?>">
                 <?php if ($enviado && !empty($mensajeErrorEmail)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorEmail ?></div>
+                    <div class="invalid-feedback mt-2"><?= $mensajeErrorEmail ?></div>
                 <?php endif; ?>
             </div>
 
             <div class="mb-3">
                 <label for="estadoUsuario" class="form-label">Estado</label>
-                <select class="form-select" id="estadoUsuario" name="estado">
+                <select class="form-select <?= !empty($mensajeErrorEstado) ? 'is-invalid' : '' ?>" id="estadoUsuario" name="estado">
                     <option value="">Seleccione...</option>
                     <option value="1" <?= ($estado === '1') ? 'selected' : '' ?>>Activo</option>
                     <option value="0" <?= ($estado === '0') ? 'selected' : '' ?>>Inactivo</option>
                 </select>
                 <?php if ($enviado && !empty($mensajeErrorEstado)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorEstado ?></div>
+                    <div class="invalid-feedback mt-2"><?= $mensajeErrorEstado ?></div>
                 <?php endif; ?>
             </div>
 

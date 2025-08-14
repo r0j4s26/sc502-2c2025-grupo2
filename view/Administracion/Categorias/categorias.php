@@ -4,14 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 session_start();
 require_once '../../../accessoDatos/accesoDatos.php';
-
-if(!isset($_SESSION["nombreUsuario"])){
-    echo '<script> 
-        alert("Debe iniciar sesión para acceder a esta página.");
-        window.location.href = "login.php";
-    </script>';
-    exit();
-}
+require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 
 $mysqli = abrirConexion();
 

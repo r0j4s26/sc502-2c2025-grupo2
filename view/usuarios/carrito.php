@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once '../../accessoDatos/accesoDatos.php';
-
+require_once __DIR__ . '/../componentes/comprobarInicio.php';
 if (!isset($_SESSION['carrito']) || !is_array($_SESSION['carrito'])) {
   $_SESSION['carrito'] = [];
 }
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           break; 
         }
       }
-      unset($it); // <- importante si usaste &
+      unset($it); 
 
       if (!$encontrado) {
         $_SESSION['carrito'][] = [
@@ -57,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=vacio'); exit;
     }
 
-    // Snapshot de checkout para evitar manipulación del POST
     $items = [];
     $total = 0.0;
 
@@ -78,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'subtotal'    => $sub,
       ];
     }
-
+ 
     $_SESSION['checkout'] = [
       'items'     => $items,
       'total'     => $total,
@@ -86,7 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'timestamp' => time(),
     ];
 
-    // Aquí debe ir la página para elegir el método, NO procesar todavía
     header('Location: /sc502-2c2025-grupo2/view/usuarios/pago.php'); 
     exit;
   }

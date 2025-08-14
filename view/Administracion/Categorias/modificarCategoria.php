@@ -3,15 +3,16 @@
 ini_set('display_errors',1);
 ini_set('display_startup_errors',1);
 error_reporting(E_ALL);
-
+session_start();
 require_once '../../../accessoDatos/accesoDatos.php';
+require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 $mysqli2 = abrirConexion();
+
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $mensajeExito = '';
 $errorNombre = $errorDescripcion = $errorEstado = "";
 
-// Obtener categoria
 $categoriaID = $mysqli2->query("SELECT * FROM CATEGORIAS WHERE id_categoria = $id")->fetch_assoc();
 
 cerrarConexion($mysqli2);
@@ -29,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $errores = 0;
 
-    // Validaciones
     if (empty($nombre)) {
         $errorNombre = "El nombre es obligatorio";
         $errores++;
@@ -113,29 +113,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <form method="POST">
                     <div class="mb-3">
                         <label for="nombreCategoria" class="form-label">Nombre</label>
-                        <input type="text" name="nombreCategoria" class="form-control" id="nombreCategoria" 
+                        <input type="text" name="nombreCategoria" class="form-control <?= !empty($errorNombre) ? 'is-invalid' : '' ?>" id="nombreCategoria" 
                                value="<?= isset($_POST['nombreCategoria']) ? $_POST['nombreCategoria'] : $categoriaID['nombre'] ?>">
-                        <?php if($errorNombre): ?>
-                            <div class="alert alert-danger mt-2 p-2"><?= $errorNombre ?></div>
+                        <?php if(!empty($errorNombre)): ?>
+                            <div class="invalid-feedback"><?= $errorNombre ?></div>
                         <?php endif; ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="descripcionCategoria" class="form-label">Descripción</label>
-                        <textarea class="form-control" name="descripcionCategoria" id="descripcionCategoria" rows="3"><?= isset($_POST['descripcionCategoria']) ? $_POST['descripcionCategoria'] : $categoriaID['descripcion'] ?></textarea>
-                        <?php if($errorDescripcion): ?>
-                            <div class="alert alert-danger mt-2 p-2"><?= $errorDescripcion ?></div>
+                        <textarea class="form-control <?= !empty($errorDescripcion) ? 'is-invalid' : '' ?>" name="descripcionCategoria" id="descripcionCategoria" rows="3"><?= isset($_POST['descripcionCategoria']) ? $_POST['descripcionCategoria'] : $categoriaID['descripcion'] ?></textarea>
+                        <?php if(!empty($errorDescripcion)): ?>
+                            <div class="invalid-feedback"><?= $errorDescripcion ?></div>
                         <?php endif; ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="estadoCategoria" class="form-label">Estado </label>
-                        <select class="form-select" name="estadoCategoria" id="estadoCategoria">
+                        <select class="form-select <?= !empty($errorEstado) ? 'is-invalid' : '' ?>" name="estadoCategoria" id="estadoCategoria">
                             <option value="Activo" <?= (isset($_POST['estadoCategoria']) ? $_POST['estadoCategoria'] == "Activo" : $categoriaID['estado']==1) ? 'selected' : '' ?>>Activo</option>
                             <option value="Inactivo" <?= (isset($_POST['estadoCategoria']) ? $_POST['estadoCategoria'] == "Inactivo" : $categoriaID['estado']==0) ? 'selected' : '' ?>>Inactivo</option>
                         </select>
-                        <?php if($errorEstado): ?>
-                            <div class="alert alert-danger mt-2 p-2"><?= $errorEstado ?></div>
+                        <?php if(!empty($errorEstado)): ?>
+                            <div class="invalid-feedback"><?= $errorEstado ?></div>
                         <?php endif; ?>
                     </div>
 

@@ -1,15 +1,8 @@
 <?php 
-if (!isset($_SESSION["nombreUsuario"])) {
-    echo '<script>
-        alert("Debe iniciar sesión para acceder a esta página.");
-        window.location.href = "../login.php";
-    </script>';
-    exit();
-}
+require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 
 $mysqli = abrirConexion();
 
-// Cargar categorias activas con ID
 $categorias = [];
 $result = $mysqli->query("SELECT id_categoria, nombre FROM CATEGORIAS WHERE estado = 1");
 if ($result) {
@@ -18,7 +11,6 @@ if ($result) {
     }
 }
 
-// Cargar proveedores activos con ID
 $proveedores = [];
 $result = $mysqli->query("SELECT id_proveedor, nombre FROM PROVEEDORES WHERE estado = 1");
 if ($result) {
@@ -27,13 +19,11 @@ if ($result) {
     }
 }
 
-// Lista de marcas de autos (sin marcas de lujo)
 $marcas = [
     "Honda", "Nissan", "Toyota", "Mazda", "Ford", "Chevrolet", "Kia", "Hyundai",
     "Volkswagen", "Mitsubishi", "Suzuki", "Renault", "Fiat", "Peugeot", "Citroën", "Chery", "Geely"
 ];
 
-// Inicializar variables
 $mensajeExito = "";
 $mensajeErrorNombre = "";
 $mensajeErrorDescripcion = "";
@@ -70,7 +60,6 @@ if ($enviado) {
         $proveedor = $_POST["proveedor"] ?? '';
         $stock = trim($_POST["stock"] ?? '');
 
-        // Validaciones
         if (strlen($nombre) < 3 || strlen($nombre) > 100) $mensajeErrorNombre = 'El nombre debe contener entre 3 y 100 caracteres.';
         if (strlen($descripcion) < 5) $mensajeErrorDescripcion = 'La descripción es demasiado corta.';
         if (!in_array($marca, $marcas)) $mensajeErrorMarca = 'Debe seleccionar una marca válida.';
@@ -81,7 +70,6 @@ if ($enviado) {
         if (!array_key_exists($proveedor, $proveedores)) $mensajeErrorProveedor = 'Debe seleccionar un proveedor válido.';
         if (!is_numeric($stock) || intval($stock) < 0) $mensajeErrorStock = 'El stock debe ser un número entero mayor o igual a 0.';
 
-        // Insertar si no hay errores
         if (empty($mensajeErrorNombre) && empty($mensajeErrorDescripcion) && empty($mensajeErrorMarca) &&
             empty($mensajeErrorCategoria) && empty($mensajeErrorCosto) && empty($mensajeErrorPrecio) &&
             empty($mensajeErrorEstado) && empty($mensajeErrorProveedor) && empty($mensajeErrorStock)) {

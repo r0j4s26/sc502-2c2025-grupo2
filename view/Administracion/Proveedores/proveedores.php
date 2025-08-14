@@ -1,10 +1,11 @@
 <?php
-
+session_start();
 ini_set('display_errors',1);
 ini_set('display_startup_errors',1);
 error_reporting(E_ALL);
 
 require_once '../../../accessoDatos/accesoDatos.php';
+require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 $mysqli = abrirConexion();
 
 $resultado = $mysqli->query("SELECT * FROM PROVEEDORES ORDER BY id_proveedor");
@@ -35,8 +36,10 @@ cerrarConexion($mysqli);
 
     <div class="container mt-5">
         <h2 class="mb-4 text-center">Lista de Proveedores</h2>
-        <div class="d-flex justify-content-center mb-4">
-            <a href="agregarProveedores.php" class="btn btn-danger">Agregar Proveedor</a>
+        <div class="text-center mb-3">
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalAgregarProveedor">
+                <i class="fas fa-plus"></i> Agregar Proveedor
+            </button>
         </div>
 
         <table class="table table-bordered table-hover align-middle">
@@ -73,7 +76,8 @@ cerrarConexion($mysqli);
                 <?php endwhile; ?>
             </tbody>
         </table>
-    </div>
+    </div>  
+    <?php include 'agregarProveedores.php'; ?>
 
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

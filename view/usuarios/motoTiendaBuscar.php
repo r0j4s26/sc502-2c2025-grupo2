@@ -2,18 +2,39 @@
 session_start();
 require_once '../../accessoDatos/accesoDatos.php';
 require_once __DIR__ . '/../componentes/comprobarInicio.php';
+
 $conn = abrirConexion();
 if (!$conn) { die('Error al conectar a la base de datos.'); }
 
-$sql = "SELECT p.id_producto, p.nombre, p.descripcion, p.marca, p.precio_venta, p.stock,
-               c.nombre AS categoria
-        FROM PRODUCTOS p
-        JOIN CATEGORIAS c ON c.id_categoria = p.id_categoria
-        WHERE p.estado = 1
-        ORDER BY p.id_producto DESC
-        LIMIT 100";
-$res = $conn->query($sql);
-$productos = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
+$busqueda = trim($_GET['q'] ?? '');
+
+if ($busqueda !== '') {
+    $sql = "SELECT p.id_producto, p.nombre, p.descripcion, p.marca, p.precio_venta, p.stock,
+                   c.nombre AS categoria
+            FROM PRODUCTOS p
+            JOIN CATEGORIAS c ON c.id_categoria = p.id_categoria
+            WHERE p.estado = 1 AND p.nombre LIKE ?
+            ORDER BY p.id_producto DESC
+            LIMIT 100";
+    $stmt = $conn->prepare($sql);
+    $param = "%$busqueda%";
+    $stmt->bind_param('s', $param);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $productos = $res->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+} else {
+    $sql = "SELECT p.id_producto, p.nombre, p.descripcion, p.marca, p.precio_venta, p.stock,
+                   c.nombre AS categoria
+            FROM PRODUCTOS p
+            JOIN CATEGORIAS c ON c.id_categoria = p.id_categoria
+            WHERE p.estado = 1
+            ORDER BY p.id_producto DESC
+            LIMIT 100";
+    $res = $conn->query($sql);
+    $productos = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
+}
+
 cerrarConexion($conn);
 ?>
 <!DOCTYPE html>
@@ -26,8 +47,8 @@ cerrarConexion($conn);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         .card-agotado {
-            background-color: #6c757d ;
-            color: #e9ecef ; 
+            background-color: #6c757d;
+            color: #e9ecef;
         }
     </style>
 </head>
@@ -41,7 +62,11 @@ cerrarConexion($conn);
         <div class="d-flex justify-content-center align-items-center h-100">
           <div class="text-white">
             <h1 class="mb-3 fw-bold display-4">Catálogo de productos</h1>
-            <h5 class="mb-4">Mejor calidad y precio en un solo lugar.</h5>
+            <?php if ($busqueda !== ''): ?>
+                <h5 class="mb-4">Resultados de búsqueda para: "<?= htmlspecialchars($busqueda) ?>"</h5>
+            <?php else: ?>
+                <h5 class="mb-4">Mejor calidad y precio en un solo lugar.</h5>
+            <?php endif; ?>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-require_once __DIR__ . '/../../componentes/comprobarInicio.php';
+require_once __DIR__ . '/../componentes/comprobarInicio.php';
 $mysqli = abrirConexion();
 
 $mensajeExito = "";
@@ -90,7 +90,7 @@ cerrarConexion($mysqli);
               <script>
                 document.addEventListener('DOMContentLoaded', function() {
                   setTimeout(function() {
-                    window.location.href = 'citas.php';
+                    window.location.href = 'verCitas.php';
                   }, 3000);
                 });
               </script>
