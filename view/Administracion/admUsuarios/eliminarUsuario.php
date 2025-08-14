@@ -5,7 +5,7 @@ $mysqli = abrirConexion();
 $id = $_GET['id'] ?? null;
 
 if ($id) {
-    $stmt = $mysqli->prepare("DELETE FROM CLIENTES WHERE id_cliente= ?");
+    $stmt = $mysqli->prepare("DELETE FROM USUARIOS WHERE id_cliente= ?");
     $stmt->bind_param('i', $id);
     $stmt->execute();
     $stmt->close();

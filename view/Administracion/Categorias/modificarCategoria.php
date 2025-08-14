@@ -2,44 +2,70 @@
 <?php
 ini_set('display_errors',1);
 ini_set('display_startup_errors',1);
-error_reporting (E_ALL);
+error_reporting(E_ALL);
+
 require_once '../../../accessoDatos/accesoDatos.php';
 $mysqli2 = abrirConexion();
 
-$id = $_GET['id'];
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $mensajeExito = '';
-$errorNombre = $errorDescripcion = $errorUrl = $errorEstado = "";
+$errorNombre = $errorDescripcion = $errorEstado = "";
 
+// Obtener categoria
 $categoriaID = $mysqli2->query("SELECT * FROM CATEGORIAS WHERE id_categoria = $id")->fetch_assoc();
 
 cerrarConexion($mysqli2);
 
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
-    try {
-        $mysqli = abrirConexion();
-        $errores = 0;
-        if ($errores == 0){
-            $stmt = $mysqli->prepare("UPDATE CATEGORIAS SET nombre = ?, descripcion = ?, estado =? WHERE id_categoria = ?");
-            $estadoCategoria = $_POST['estadoCategoria'];
-            $idEstado = ($estadoCategoria == "Activo") ? 1 : 0;
-            $stmt->bind_param("ssii", $_POST['nombreCategoria'], $_POST['descripcionCategoria'],$idEstado, $id);
-        if ($stmt->execute()) {
-            $categoriaID = $mysqli->query("SELECT * FROM CATEGORIAS WHERE id_categoria = $id")->fetch_assoc();
-            cerrarConexion($mysqli);
-            $mensajeExito = "¡Categoría actualizada correctamente! Redirigiendo...";
-            echo "<script>
-                setTimeout(function() {
-                    window.location.href = '/sc502-2c2025-grupo2/view/Administracion/Categorias/categorias.php';
-                }, 2500);
-            </script>";
-        }else {
-                throw new Exception("Sucedió un error al realizar la actualización de la tarea.");
-            }
-        }else {
+if (!$categoriaID) {
+    echo '<div class="alert alert-danger">Categoría no encontrada.</div>';
+    exit();
+}
 
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $nombre = trim($_POST['nombreCategoria']);
+    $descripcion = trim($_POST['descripcionCategoria']);
+    $estadoCategoria = $_POST['estadoCategoria'];
+    $idEstado = ($estadoCategoria == "Activo") ? 1 : 0;
+
+    $errores = 0;
+
+    // Validaciones
+    if (empty($nombre)) {
+        $errorNombre = "El nombre es obligatorio";
+        $errores++;
+    }
+
+    if (empty($descripcion)) {
+        $errorDescripcion = "La descripción es obligatoria";
+        $errores++;
+    }
+
+    if (!in_array($estadoCategoria, ["Activo", "Inactivo"])) {
+        $errorEstado = "Seleccione un estado válido";
+        $errores++;
+    }
+
+    if ($errores == 0) {
+        try {
+            $mysqli = abrirConexion();
+            $stmt = $mysqli->prepare("UPDATE CATEGORIAS SET nombre = ?, descripcion = ?, estado = ? WHERE id_categoria = ?");
+            $stmt->bind_param("ssii", $nombre, $descripcion, $idEstado, $id);
+
+            if ($stmt->execute()) {
+                $categoriaID = $mysqli->query("SELECT * FROM CATEGORIAS WHERE id_categoria = $id")->fetch_assoc();
+                cerrarConexion($mysqli);
+                $mensajeExito = "¡Categoría actualizada correctamente! Redirigiendo...";
+                echo "<script>
+                    setTimeout(function() {
+                        window.location.href = '/sc502-2c2025-grupo2/view/Administracion/Categorias/categorias.php';
+                    }, 2500);
+                </script>";
+            } else {
+                throw new Exception("Sucedió un error al realizar la actualización.");
+            }
+        } catch (Exception $e) {
+            echo '<div class="alert alert-danger">Error: ' . $e->getMessage() . '</div>';
         }
-    } catch (Exception $e) {
-         echo "Error: " . $e->getMessage();
     }
 }
 ?>
@@ -80,26 +106,37 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
             <div class="card-body">
                 <?php if (!empty($mensajeExito)): ?>
                     <div class="alert alert-success">
-                        <?php echo $mensajeExito; ?>
+                        <?= $mensajeExito ?>
                     </div>
                 <?php endif; ?>
+
                 <form method="POST">
                     <div class="mb-3">
                         <label for="nombreCategoria" class="form-label">Nombre</label>
-                        <input type="text" name="nombreCategoria" class="form-control" id="nombreCategoria" value="<?php echo $categoriaID["nombre"] ?>">
+                        <input type="text" name="nombreCategoria" class="form-control" id="nombreCategoria" 
+                               value="<?= isset($_POST['nombreCategoria']) ? $_POST['nombreCategoria'] : $categoriaID['nombre'] ?>">
+                        <?php if($errorNombre): ?>
+                            <div class="alert alert-danger mt-2 p-2"><?= $errorNombre ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="descripcionCategoria" class="form-label">Descripción</label>
-                        <textarea class="form-control" name="descripcionCategoria" id="descripcionCategoria" rows="3"><?php echo $categoriaID["descripcion"] ?></textarea>
+                        <textarea class="form-control" name="descripcionCategoria" id="descripcionCategoria" rows="3"><?= isset($_POST['descripcionCategoria']) ? $_POST['descripcionCategoria'] : $categoriaID['descripcion'] ?></textarea>
+                        <?php if($errorDescripcion): ?>
+                            <div class="alert alert-danger mt-2 p-2"><?= $errorDescripcion ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="mb-3">
                         <label for="estadoCategoria" class="form-label">Estado </label>
                         <select class="form-select" name="estadoCategoria" id="estadoCategoria">
-                            <option value="Activo" <?php if ($categoriaID["estado"] == 1) echo 'selected'; ?>>Activo</option>
-                            <option value="Inactivo" <?php if ($categoriaID["estado"] == 0) echo 'selected'; ?>>Inactivo</option>
+                            <option value="Activo" <?= (isset($_POST['estadoCategoria']) ? $_POST['estadoCategoria'] == "Activo" : $categoriaID['estado']==1) ? 'selected' : '' ?>>Activo</option>
+                            <option value="Inactivo" <?= (isset($_POST['estadoCategoria']) ? $_POST['estadoCategoria'] == "Inactivo" : $categoriaID['estado']==0) ? 'selected' : '' ?>>Inactivo</option>
                         </select>
+                        <?php if($errorEstado): ?>
+                            <div class="alert alert-danger mt-2 p-2"><?= $errorEstado ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="text-end">

@@ -1,5 +1,4 @@
 <?php
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -7,120 +6,152 @@ error_reporting(E_ALL);
 require_once '../../../accessoDatos/accesoDatos.php';
 $mysqli = abrirConexion();
 
-$id = $_GET['id'];
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
+$mensajeExito = "";
+$mensajeErrorNombre = "";
+$mensajeErrorTelefono = "";
+$mensajeErrorCorreo = "";
+$mensajeErrorDireccion = "";
+$mensajeErrorMetodo = "";
+$mensajeErrorEstado = "";
 $proveedor = $mysqli->query("SELECT * FROM PROVEEDORES WHERE id_proveedor = $id")->fetch_assoc();
+$metodosPago = ["Contado", "Credito"];
+$nombre = $proveedor['nombre'];
+$telefono = $proveedor['telefono'];
+$correo = $proveedor['correo'];
+$direccion = $proveedor['direccion'];
+$metodo_pago = $proveedor['metodo_pago'];
+$estado = ($proveedor['estado'] == 1) ? "Activo" : "Inactivo";
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
+    $nombre = trim($_POST["nombre"]);
+    $telefono = trim($_POST["telefono"]);
+    $correo = trim($_POST["correo"]);
+    $direccion = trim($_POST["direccion"]);
+    $metodo_pago = $_POST["metodo_pago"];
+    $estado = $_POST["estado"];
+    if(strlen($nombre) < 3 || strlen($nombre) > 50) $mensajeErrorNombre = "El nombre debe tener entre 3 y 50 caracteres.";
+    if(!preg_match('/^\d{8}$/', $telefono)) $mensajeErrorTelefono = "El teléfono debe tener 8 dígitos.";
+    if(!filter_var($correo, FILTER_VALIDATE_EMAIL)) $mensajeErrorCorreo = "Correo no válido.";
+    if(strlen($direccion) < 5) $mensajeErrorDireccion = "La dirección es demasiado corta.";
+    if(!in_array($metodo_pago, $metodosPago)) $mensajeErrorMetodo = "Debe seleccionar un método de pago válido.";
+    if($estado !== "Activo" && $estado !== "Inactivo") $mensajeErrorEstado = "Debe seleccionar un estado válido.";
+    if(empty($mensajeErrorNombre) && empty($mensajeErrorTelefono) && empty($mensajeErrorCorreo) &&
+       empty($mensajeErrorDireccion) && empty($mensajeErrorMetodo) && empty($mensajeErrorEstado)) {
 
-    $stmt = $mysqli->prepare("UPDATE PROVEEDORES SET nombre = ?, telefono = ?, correo = ?, direccion =?, metodo_pago = ?, estado = ? WHERE id_proveedor = ?");
-    $stmt->bind_param("sisssii",$_POST["nombre"],$_POST["telefono"],$_POST["correo"],$_POST["direccion"],$_POST["metodo_pago"],$_POST["estado"], $id);
-    
-    if($stmt->execute()){
+        $estadoBit = ($estado === "Activo") ? 1 : 0;
+        $stmt = $mysqli->prepare("UPDATE PROVEEDORES SET nombre=?, telefono=?, correo=?, direccion=?, metodo_pago=?, estado=? WHERE id_proveedor=?");
+        $stmt->bind_param("sisssii", $nombre, $telefono, $correo, $direccion, $metodo_pago, $estadoBit, $id);
 
-        cerrarConexion($mysqli);
-
-        echo '<script>
-            alert("El usuario se actualizo correctamente.")
-            window.location.href = "proveedores.php"
-            </script>';
-
-    }else{
-        throw new exception("Sucedio un error al actualizar proveedor.");
+        if($stmt->execute()){
+            $mensajeExito = "¡Proveedor actualizado correctamente!";
+        } else {
+            $mensajeErrorNombre = "Ocurrió un error al actualizar el proveedor.";
+        }
     }
 }
 
+cerrarConexion($mysqli);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Modificar Proveedor | MotoRepuestos Rojas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .card-sombra { box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .card-header-custom { background-color: #8B0000; color: white; font-weight: bold; }
+        .btn-custom { background-color: #8B0000; color: white; }
+        .btn-custom:hover { background-color: #a52a2a; }
+    </style>
 </head>
+<body class="bg-light">
+<?php include '../../componentes/navbar.php'; ?>
 
-<body class="bg bg-light">
-    <?php include '../../componentes/navbar.php'; ?>
+<div class="container mt-5">
+    <div class="card card-sombra">
+        <div class="card-header card-header-custom text-center">
+            Modificar Proveedor
+        </div>
+        <div class="card-body">
+            <?php if(!empty($mensajeExito)): ?>
+                <div class="alert alert-success text-center"><?= $mensajeExito ?></div>
+            <?php endif; ?>
 
-    <div class="container-fluid mt-3">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="card shadow rounded-4 border-0">
+            <form method="POST" novalidate>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-control" name="nombre" value="<?= $nombre ?>">
+                        <?php if(!empty($mensajeErrorNombre)): ?>
+                            <div class="alert alert-danger mt-2"><?= $mensajeErrorNombre ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono</label>
+                        <input type="number" class="form-control" name="telefono" value="<?= $telefono ?>">
+                        <?php if(!empty($mensajeErrorTelefono)): ?>
+                            <div class="alert alert-danger mt-2"><?= $mensajeErrorTelefono ?></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
 
-                    <div class="card-header bg-white text-center border-0 pb-0">
-                        <div stye="background-color: #8B0000;">
-                            <h4 class="fw-bold mt-2">Modificar Proveedor</h4>
-                        </div>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" name="correo" value="<?= $correo ?>">
+                        <?php if(!empty($mensajeErrorCorreo)): ?>
+                            <div class="alert alert-danger mt-2"><?= $mensajeErrorCorreo ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" class="form-control" name="direccion" value="<?= $direccion ?>">
+                        <?php if(!empty($mensajeErrorDireccion)): ?>
+                            <div class="alert alert-danger mt-2"><?= $mensajeErrorDireccion ?></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Método de pago</label>
+                        <select class="form-select" name="metodo_pago">
+                            <option value="">Seleccione un método</option>
+                            <?php foreach($metodosPago as $metodo): ?>
+                                <option value="<?= $metodo ?>" <?= ($metodo_pago == $metodo) ? 'selected' : '' ?>><?= $metodo ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if(!empty($mensajeErrorMetodo)): ?>
+                            <div class="alert alert-danger mt-2"><?= $mensajeErrorMetodo ?></div>
+                        <?php endif; ?>
                     </div>
 
-                    <div class="card-body p-3">
-                        <form id="registroForm" method="post" action="">
-
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="nombreProveedor" class="form-label">Nombre</label>
-                                    <input type="text" class="form-control" maxlength="50" id="nombre"
-                                        name="nombre" value="<?php echo $proveedor["nombre"] ?>" placeholder="Ingresar nombre" required />
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="telefonoProveedor" class="form-label">Teléfono</label>
-                                    <input type="number" class="form-control" minlenght="8" maxlength="8"
-                                        id="telefono" name="telefono"
-                                        value="<?php echo $proveedor["telefono"] ?>" placeholder="Ingresar teléfono" required />
-                                </div>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="correoProveedor" class="form-label">Correo Electrónico</label>
-                                    <input type="email" class="form-control" maxlength="50" id="correo"
-                                        name="correo" value="<?php echo $proveedor["correo"] ?>"  placeholder="Ingresar Correo" required />
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="direccion" class="form-label">Dirección</label>
-                                    <input type="text" class="form-control" maxlength="100" id="direccion"
-                                        name="direccion" value="<?php echo $proveedor["direccion"] ?>" placeholder="Ingresar Dirección" required />
-                                </div>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="metodoPago" class="form-label">Método de pago</label>
-                                    <select class="form-select" id="metodo_pago" name="metodo_pago"
-                                        aria-label="Default select example">
-                                        <option select>Seleccione un método</option>
-                                        <option <?php if ($proveedor["metodo_pago"] == "Con") echo 'selected' ?>>Contado</option>
-                                        <option <?php if ($proveedor["metodo_pago"] == "Cre") echo 'selected' ?>>Credito</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label for="estado" class="form-label">Estado</label>
-                                        <select class="form-select" id="estado" name="estado"
-                                            aria-label="Default select example">
-                                            <option value="">--Seleccione un estado--</option>
-                                            <option value="Activo" <?php if ($proveedor["estado"] == "Activo") echo 'selected'; ?>>Activo</option>
-                                            <option value="Inactivo" <?php if ($proveedor["estado"] == "Inactivo") echo 'selected'; ?>> Inactivo</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <button type="submit" href="proveedores.php" class="btn btn-primary w-100 py-2 mt-2"><strong>Guardar</strong></button>
-                                    <a class="btn btn-danger w-100 py-2 mt-1" href="proveedores.php"><strong>Cancelar</strong></a>                           
-                                </div>   
-
-                        </form>
+                    <div class="col-md-6">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" name="estado">
+                            <option value="">Seleccione un estado</option>
+                            <option value="Activo" <?= ($estado == "Activo") ? 'selected' : '' ?>>Activo</option>
+                            <option value="Inactivo" <?= ($estado == "Inactivo") ? 'selected' : '' ?>>Inactivo</option>
+                        </select>
+                        <?php if(!empty($mensajeErrorEstado)): ?>
+                            <div class="alert alert-danger mt-2"><?= $mensajeErrorEstado ?></div>
+                        <?php endif; ?>
                     </div>
-                    
-                </div>               
-            </div>
+                </div>
+
+                <div class="mt-3 text-end">
+                    <button type="submit" class="btn btn-custom">Guardar</button>
+                    <a href="proveedores.php" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
         </div>
     </div>
-
+</div>
 </body>
 </html>

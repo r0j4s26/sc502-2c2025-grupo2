@@ -10,7 +10,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <?php include '../componentes/navbar.php'; ?> 
   <div class="modal fade" id="modalAgregarCita" >
   <div class="modal-dialog">
     <div class="modal-content">
