@@ -51,10 +51,13 @@ if ($metodo === 'Tarjeta') {
 }
 
 if ($metodo === 'SINPE') {
-  if ($sinpe_ref !== '' && !preg_match('/^[A-Za-z0-9\-\_]{3,40}$/', $sinpe_ref)) {
+  if ($sinpe_ref === '') {
+    $errors[] = 'Debés ingresar la referencia de la transferencia SINPE.';
+  } elseif (!preg_match('/^[A-Za-z0-9\-\_]{3,40}$/', $sinpe_ref)) {
     $errors[] = 'La referencia SINPE contiene caracteres inválidos o supera 40 caracteres.';
   }
 }
+
 
 
 if (!empty($errors)) {
@@ -89,10 +92,13 @@ if (!$conn) {
 $conn->begin_transaction();
 try {
 
-  $sqlPedido = "INSERT INTO PEDIDOS (fecha_pedido, fecha_entrega, direccion_entrega, total, estado, id_cliente)
-                VALUES (NOW(), NULL, ?, ?, 'Pendiente', ?)";
-  $stPedido = $conn->prepare($sqlPedido);
-  $stPedido->bind_param('sdi', $direccion, $total, $idCliente);
+
+$sqlPedido = "INSERT INTO PEDIDOS (fecha_entrega, direccion, total, id_cliente)
+              VALUES (DATE_ADD(NOW(), INTERVAL 3 DAY), ?, ?, ?)";
+$stPedido = $conn->prepare($sqlPedido);
+$stPedido->bind_param('sdi', $direccion, $total, $idCliente);
+
+
   $stPedido->execute();
   $idPedido = $conn->insert_id;
   $stPedido->close();

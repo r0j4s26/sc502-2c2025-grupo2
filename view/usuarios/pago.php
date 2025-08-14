@@ -11,9 +11,6 @@ $total  = (float)$checkout['total'];
 $errors = $_SESSION['errors'] ?? [];
 $old    = $_SESSION['old']    ?? [];
 unset($_SESSION['errors'], $_SESSION['old']); 
-
-$ef = !empty($old['mp_efectivo']);    
-$m  = $old['metodo_pago'] ?? '';       
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -30,7 +27,7 @@ $m  = $old['metodo_pago'] ?? '';
 
   <div class="container my-4">
     <div class="row g-4">
-      <!-- Resumen -->
+ 
       <div class="col-12 col-lg-7">
         <div class="card card-soft">
           <div class="card-header bg-white fw-semibold">Resumen de compra</div>
@@ -61,78 +58,37 @@ $m  = $old['metodo_pago'] ?? '';
 
 
       <div class="col-12 col-lg-5">
-        <form method="post" action="/sc502-2c2025-grupo2/view/usuarios/procesar_pago.php" class="card card-soft">
-          <div class="card-header bg-white fw-semibold">Elegí el método de pago</div>
+        
+        <form method="post" action="/sc502-2c2025-grupo2/view/usuarios/procesar_pago.php" id="formPago" class="card card-soft">
+          <div class="card-header bg-white fw-semibold">Elige el método de pago</div>
           <div class="card-body">
-
-   
-            <div class="form-check mb-2">
-              <input class="form-check-input" type="checkbox" id="mpEfectivoChk" name="mp_efectivo" value="1" <?= $ef ? 'checked' : '' ?>>
-              <label class="form-check-label fw-semibold" for="mpEfectivoChk">
-                Pagar en efectivo (contra entrega / mostrador)
-              </label>
-            </div>
-
-            <div class="small text-muted mb-2">Si no elegís efectivo, seleccioná una de estas opciones:</div>
-
-
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="metodo_pago" id="mpTarjeta" value="Tarjeta" <?= $m==='Tarjeta'?'checked':''; ?>>
-              <label class="form-check-label" for="mpTarjeta">Tarjeta (crédito/débito)</label>
-            </div>
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="radio" name="metodo_pago" id="mpSinpe" value="SINPE" <?= $m==='SINPE'?'checked':''; ?>>
-              <label class="form-check-label" for="mpSinpe">SINPE Móvil / Transferencia</label>
-            </div>
-
-            <div class="border rounded p-3 mb-3">
-              <div class="mb-2 fw-semibold">Datos de tarjeta (solo si elegís Tarjeta)</div>
-              <div class="mb-2">
-                <label for="tarjeta_numero" class="form-label">Número de tarjeta</label>
-                <input type="text" class="form-control" id="tarjeta_numero" name="tarjeta_numero"
-                       value="<?= htmlspecialchars($old['tarjeta_numero'] ?? '') ?>" placeholder="Solo dígitos, sin espacios">
-              </div>
-              <div class="row g-2">
-                <div class="col-4">
-                  <label for="tarjeta_mes" class="form-label">Mes (MM)</label>
-                  <input type="text" class="form-control" id="tarjeta_mes" name="tarjeta_mes"
-                         value="<?= htmlspecialchars($old['tarjeta_mes'] ?? '') ?>">
-                </div>
-                <div class="col-4">
-                  <label for="tarjeta_anio" class="form-label">Año (YY)</label>
-                  <input type="text" class="form-control" id="tarjeta_anio" name="tarjeta_anio"
-                         value="<?= htmlspecialchars($old['tarjeta_anio'] ?? '') ?>">
-                </div>
-                <div class="col-4">
-                  <label for="tarjeta_cvv" class="form-label">CVV</label>
-                  <input type="password" class="form-control" id="tarjeta_cvv" name="tarjeta_cvv"
-                         value="<?= htmlspecialchars($old['tarjeta_cvv'] ?? '') ?>">
-                </div>
-              </div>
-              <div class="mt-2">
-                <label for="tarjeta_nombre" class="form-label">Nombre en la tarjeta</label>
-                <input type="text" class="form-control" id="tarjeta_nombre" name="tarjeta_nombre"
-                       value="<?= htmlspecialchars($old['tarjeta_nombre'] ?? '') ?>">
-              </div>
-            </div>
-
-
-            <div class="border rounded p-3 mb-3">
-              <div class="mb-2 fw-semibold">Datos de SINPE (solo si elegís SINPE)</div>
-              <label for="sinpe_ref" class="form-label">Referencia/ID (opcional)</label>
-              <input type="text" class="form-control" id="sinpe_ref" name="sinpe_ref"
-                     value="<?= htmlspecialchars($old['sinpe_ref'] ?? '') ?>" placeholder="Ref. del banco o SINPE Móvil">
-            </div>
-
-            <div class="mb-3">
-              <label for="direccion" class="form-label">Dirección de entrega (opcional)</label>
-              <textarea class="form-control" id="direccion" name="direccion" rows="3"><?= htmlspecialchars($old['direccion'] ?? '') ?></textarea>
-            </div>
+            <p class="text-muted mb-3">Se abrirá una ventana para completar los datos del método elegido.</p>
 
             <div class="d-grid gap-2">
-              <button class="btn btn-success" type="submit">Confirmar y pagar</button>
-              <a href="/sc502-2c2025-grupo2/view/usuarios/carrito.php" class="btn btn-outline-secondary">← Volver al carrito</a>
+              <button type="button" class="btn btn-outline-dark" id="btnEfectivo">Efectivo</button>
+              <button type="button" class="btn btn-outline-primary" id="btnTarjeta">Tarjeta</button>
+              <button type="button" class="btn btn-outline-success" id="btnSinpe">SINPE</button>
             </div>
+
+            <hr class="my-4">
+
+            <div class="mb-3">
+              <label for="direccion" class="form-label">Dirección de entrega</label>
+              <textarea class="form-control" id="direccionVisible" rows="3" placeholder="Provincia, cantón, distrito, señas exactas..."><?= htmlspecialchars($old['direccion'] ?? '') ?></textarea>
+            </div>
+
+
+            <input type="hidden" name="metodo_pago" id="metodo_pago">
+
+            <input type="hidden" name="direccion" id="direccion">
+
+            <input type="hidden" name="tarjeta_numero" id="tarjeta_numero">
+            <input type="hidden" name="tarjeta_mes" id="tarjeta_mes">
+            <input type="hidden" name="tarjeta_anio" id="tarjeta_anio">
+            <input type="hidden" name="tarjeta_cvv" id="tarjeta_cvv">
+            <input type="hidden" name="tarjeta_nombre" id="tarjeta_nombre">
+
+            <input type="hidden" name="sinpe_ref" id="sinpe_ref">
           </div>
         </form>
       </div>
@@ -141,6 +97,118 @@ $m  = $old['metodo_pago'] ?? '';
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
+
+    function syncDireccion() {
+      document.getElementById('direccion').value = document.getElementById('direccionVisible').value.trim();
+    }
+
+    // EFECTIVO
+    document.getElementById('btnEfectivo').addEventListener('click', async () => {
+      const ok = await Swal.fire({
+        title: 'Pago en efectivo',
+        html: 'Confirmá que realizarás el pago en efectivo al recibir o en mostrador.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+      });
+      if (!ok.isConfirmed) return;
+
+      document.getElementById('metodo_pago').value = 'Efectivo';
+      syncDireccion();
+      document.getElementById('formPago').submit();
+    });
+
+  // TARJETA
+document.getElementById('btnTarjeta').addEventListener('click', async () => {
+  const { value: formValues, isConfirmed } = await Swal.fire({
+    title: 'Pago con tarjeta',
+    html: `
+      <div class="text-start" style="max-width:360px; margin:0 auto; font-size:15px;">
+        
+        <!-- Número de tarjeta -->
+        <label class="form-label mb-1">Número de tarjeta</label>
+        <input id="sw_num" class="form-control mb-2" placeholder="Solo dígitos" inputmode="numeric">
+
+        <!-- Mes/Año/CVV -->
+        <div class="row g-2 mb-2">
+          <div class="col-4">
+            <label class="form-label mb-1">Mes</label>
+            <input id="sw_mes" class="form-control" placeholder="MM" maxlength="2" inputmode="numeric">
+          </div>
+          <div class="col-4">
+            <label class="form-label mb-1">Año</label>
+            <input id="sw_ano" class="form-control" placeholder="YY" maxlength="2" inputmode="numeric">
+          </div>
+          <div class="col-4">
+            <label class="form-label mb-1">CVV</label>
+            <input id="sw_cvv" class="form-control" placeholder="***" maxlength="4" inputmode="numeric">
+          </div>
+        </div>
+
+        <!-- Nombre -->
+        <label class="form-label mb-1">Nombre en la tarjeta</label>
+        <input id="sw_nom" class="form-control" placeholder="Como aparece en la tarjeta">
+      </div>
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'Pagar',
+    cancelButtonText: 'Cancelar',
+    preConfirm: () => {
+      return {
+        num: (document.getElementById('sw_num').value || '').trim(),
+        mes: (document.getElementById('sw_mes').value || '').trim(),
+        ano: (document.getElementById('sw_ano').value || '').trim(),
+        cvv: (document.getElementById('sw_cvv').value || '').trim(),
+        nom: (document.getElementById('sw_nom').value || '').trim(),
+      };
+    }
+  });
+
+  if (!isConfirmed) return;
+
+  document.getElementById('metodo_pago').value  = 'Tarjeta';
+  document.getElementById('tarjeta_numero').value = formValues.num;
+  document.getElementById('tarjeta_mes').value    = formValues.mes;
+  document.getElementById('tarjeta_anio').value   = formValues.ano;
+  document.getElementById('tarjeta_cvv').value    = formValues.cvv;
+  document.getElementById('tarjeta_nombre').value = formValues.nom;
+  syncDireccion();
+  document.getElementById('formPago').submit();
+});
+
+
+
+
+    
+
+    document.getElementById('btnSinpe').addEventListener('click', async () => {
+      const { value: ref, isConfirmed } = await Swal.fire({
+        title: 'Pago por SINPE',
+        html: `
+          <div class="text-start">
+            <p class="mb-2">Transferí el total a nuestro SINPE Móvil <strong>8X-XX-XX-XX</strong> y (opcional) indicá la referencia:</p>
+            <input id="sw_sinpe" class="swal2-input" placeholder="Referencia/ID (opcional)">
+          </div>
+        `,
+        input: null,
+        showCancelButton: true,
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => (document.getElementById('sw_sinpe').value || '').trim()
+      });
+
+      if (!isConfirmed) return;
+
+      document.getElementById('metodo_pago').value = 'SINPE';
+      document.getElementById('sinpe_ref').value   = ref;
+      syncDireccion();
+      document.getElementById('formPago').submit();
+    });
+
+
     <?php if (!empty($errors)):
       $msg = implode('<br>', array_map('htmlspecialchars', $errors)); ?>
       Swal.fire({icon:'error', title:'Revisá la información', html:'<?= $msg ?>'});

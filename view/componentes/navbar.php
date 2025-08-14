@@ -34,7 +34,7 @@ echo '
 
             <ul class="navbar-nav mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="/sc502-2c2025-grupo2/view/usuarios/login.php">Cerrar Sesión</a>
+                    <a class="nav-link" href="/sc502-2c2025-grupo2/view/usuarios/index.php">Cerrar Sesión</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/sc502-2c2025-grupo2/view/usuarios/carrito.php">Carrito</a>
