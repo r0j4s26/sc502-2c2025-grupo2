@@ -4,18 +4,18 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 session_start();
 require_once '../../../accessoDatos/accesoDatos.php';
-
 require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 
 $mysqli = abrirConexion();
 
-$clientes = $mysqli->query("SELECT * FROM USUARIOS");
-
-if(!$clientes){
+$usuarios = $mysqli->query("SELECT * FROM USUARIOS");
+if (!$usuarios) {
     die("Error en la consulta: " . $mysqli->error);
 }
 
 cerrarConexion($mysqli);
+
+require 'agregarUsuario.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -30,6 +30,7 @@ cerrarConexion($mysqli);
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-light">
 
@@ -43,9 +44,9 @@ cerrarConexion($mysqli);
                 <i class="fas fa-plus"></i> Agregar Usuario
             </button>
         </div>
- 
+
         <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle text-center">
+            <table id="tablaUsuarios" class="table table-bordered table-hover align-middle text-center">
                 <thead class="table-danger text-center">
                     <tr>
                         <th>ID</th>
@@ -58,20 +59,20 @@ cerrarConexion($mysqli);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while($fila = $clientes->fetch_assoc()): ?>
+                    <?php while($fila = $usuarios->fetch_assoc()): ?>
                         <tr>
-                            <td><?= $fila['id_cliente']?></td>
-                            <td><?= $fila['nombre']?></td>
-                            <td><?= $fila['apellidos']?></td>
-                            <td><?= $fila['telefono']?></td>
-                            <td><?= $fila['email']?></td>
+                            <td><?= $fila['id_cliente'] ?></td>
+                            <td><?= $fila['nombre'] ?></td>
+                            <td><?= $fila['apellidos'] ?></td>
+                            <td><?= $fila['telefono'] ?></td>
+                            <td><?= $fila['email'] ?></td>
                             <td>
                                 <span class="badge <?= ($fila['estado'] == 1) ? 'bg-success' : 'bg-danger' ?>">
                                     <?= ($fila['estado'] == 1) ? 'Activo' : 'Inactivo' ?>
                                 </span>
                             </td>
                             <td>
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#confirmarEliminarModal" data-id="<?= $fila['id_cliente'] ?>" class="btn btn-sm btn-danger me-1">Eliminar</a>
+                                <button type="button" class="btn btn-sm btn-danger me-1 btn-eliminar" data-id="<?= $fila['id_cliente'] ?>">Eliminar</button>
                                 <a href="modificarUsuario.php?id_cliente=<?= $fila['id_cliente']?>" class="btn btn-sm btn-primary">Modificar</a>
                             </td>
                         </tr>
@@ -79,47 +80,101 @@ cerrarConexion($mysqli);
                 </tbody>
             </table>
         </div>
-
-        <?php include 'agregarUsuario.php'; ?>
-    </div>
-    <div class="modal fade" id="confirmarEliminarModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">Confirmar eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <a href="#" class="btn btn-danger" id="btnConfirmarEliminar">Sí, eliminar</a>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
         $(document).ready(function () {
-            $('table').DataTable({
+            $('#tablaUsuarios').DataTable({
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
                 }
             });
         });
-        const modalEliminar = document.getElementById('confirmarEliminarModal');
-        const btnConfirmarEliminar = document.getElementById('btnConfirmarEliminar');
 
-        modalEliminar.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget; 
-            const usuarioId = button.getAttribute('data-id'); 
-            btnConfirmarEliminar.href = 'eliminarUsuario.php?id=' + usuarioId;
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            if (performance.getEntriesByType("navigation")[0].type === "reload") {
-                window.location.href = "usuarios.php"; 
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(location.search);
+
+            // Usuario agregado
+            if (params.get('agregado') === '1') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: '¡Usuario agregado exitosamente!',
+                    showConfirmButton: false,
+                    timer: 2200,
+                    timerProgressBar: true
+                });
+                params.delete('agregado');
             }
+
+            // Error si se desea eliminar el usuario que está siendo usado
+            if (params.get('error') === '1') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'error',
+                    title: 'No se puede eliminar el usuario en uso.',
+                    showConfirmButton: false,
+                    timer: 2200,
+                    timerProgressBar: true
+                });
+                params.delete('error');
+            }
+
+            // Usuario eliminado
+            if (params.get('eliminado') === '1') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Usuario eliminado',
+                    showConfirmButton: false,
+                    timer: 2200,
+                    timerProgressBar: true
+                });
+                params.delete('eliminado');
+            }
+
+            // Usuario modificado
+            if (params.get('modificado') === '1') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Usuario modificado',
+                    showConfirmButton: false,
+                    timer: 2200,
+                    timerProgressBar: true
+                });
+                params.delete('modificado');
+            }
+
+            // Actualizar la URL una sola vez al final, sin recargar
+            const url = window.location.origin + window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            history.replaceState({}, '', url);
+        });
+
+
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn-eliminar');
+            if (!btn) return;
+            e.preventDefault();
+            const idCliente = btn.getAttribute('data-id');
+            Swal.fire({
+                title: '¿Esta seguro que desea eliminar este usuario?',
+                text: "Esta acción no se puede deshacer",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'eliminarUsuario.php?id_cliente=' + encodeURIComponent(idCliente);
+                }
+            });
         });
     </script>
 

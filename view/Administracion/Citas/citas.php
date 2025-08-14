@@ -37,6 +37,7 @@ cerrarConexion($mysqli);
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-light">
 
@@ -73,7 +74,7 @@ cerrarConexion($mysqli);
               <td><?= $u['motivo'] ?></td>
               <td><?= $u['nombre_completo'] ?></td>
               <td>
-                <a href="eliminarCitas.php?id=<?= $u['id_cita'] ?>" onclick="return confirm('Desea eliminar la cita?')" class="btn btn-sm btn-danger">Eliminar</a>
+                <button type="button" class="btn btn-sm btn-danger me-1 btn-eliminar" data-id="<?= $u['id_cita'] ?>">Eliminar</button>
                 <a href="modificarCitas.php?id=<?= $u['id_cita'] ?>" class="btn btn-sm btn-primary me-2">Modificar</a>
               </td>
             </tr>
@@ -89,6 +90,7 @@ cerrarConexion($mysqli);
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
   <script>
     $(document).ready(function () {
         $('table').DataTable({
@@ -96,6 +98,73 @@ cerrarConexion($mysqli);
                 url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
             }
         });
+    });
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-eliminar');
+        if (!btn) return;
+        e.preventDefault();
+        const idCita = btn.getAttribute('data-id');
+        Swal.fire({
+            title: '¿Esta seguro que desea eliminar esta cita?',
+            text: "Esta acción no se puede deshacer",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = 'eliminarCitas.php?id=' + encodeURIComponent(idCita);
+            }
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(location.search);
+
+        if (params.get('agregado') === '1') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Cita agregada exitosamente',
+                showConfirmButton: false,
+                timer: 2200,
+                timerProgressBar: true
+            });
+            params.delete('agregado');
+        }
+
+        if (params.get('modificado') === '1') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Cita modificada exitosamente',
+                showConfirmButton: false,
+                timer: 2200,
+                timerProgressBar: true
+            });
+            params.delete('modificado');
+        }
+
+        if (params.get('eliminado') === '1') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Cita eliminada exitosamente',
+                showConfirmButton: false,
+                timer: 2200,
+                timerProgressBar: true
+            });
+            params.delete('eliminado');
+        }
+
+        const url = window.location.origin + window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        history.replaceState({}, '', url);
     });
   </script>
 </body>

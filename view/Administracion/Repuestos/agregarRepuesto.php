@@ -82,7 +82,10 @@ if ($enviado) {
             $stmt->bind_param("sssddiiii", $nombre, $descripcion, $marca, $costoUnitario, $precioVenta, $estadoInt, $stock, $categoria, $proveedor);
 
             if ($stmt->execute()) {
-                $mensajeExito = "¡Repuesto agregado exitosamente! Redirigiendo...";
+                echo '<script>
+                    window.location.href = "repuestos.php?agregado=1";
+                </script>';
+                exit();
             } else {
                 $mensajeError = "Error al insertar el repuesto: " . $stmt->error;
             }
@@ -104,102 +107,78 @@ cerrarConexion($mysqli);
         </div>
         <div class="modal-body">
 
-            <?php if (!empty($mensajeError)): ?>
-              <div class="alert alert-danger"><?= $mensajeError ?></div>
-            <?php endif; ?>
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
-                <input type="text" class="form-control" name="nombre" value="<?= $nombre ?>">
-                <?php if ($enviado && !empty($mensajeErrorNombre)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorNombre ?></div>
-                <?php endif; ?>
+                <input type="text" class="form-control <?= !empty($mensajeErrorNombre) ? 'is-invalid' : '' ?>" name="nombre" value="<?= $nombre ?>">
+                <div class="invalid-feedback"><?= $mensajeErrorNombre ?></div>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Descripción</label>
-                <textarea class="form-control" name="descripcion" rows="3"><?= $descripcion ?></textarea>
-                <?php if ($enviado && !empty($mensajeErrorDescripcion)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorDescripcion ?></div>
-                <?php endif; ?>
+                <textarea class="form-control <?= !empty($mensajeErrorDescripcion) ? 'is-invalid' : '' ?>" name="descripcion" rows="3"><?= $descripcion ?></textarea>
+                <div class="invalid-feedback"><?= $mensajeErrorDescripcion ?></div>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Marca</label>
-                <select class="form-select" name="marca">
+                <select class="form-select <?= !empty($mensajeErrorMarca) ? 'is-invalid' : '' ?>" name="marca">
                     <option value="">Seleccione marca...</option>
                     <?php foreach ($marcas as $m): ?>
                         <option value="<?= $m ?>" <?= ($marca === $m) ? 'selected' : '' ?>><?= $m ?></option>
                     <?php endforeach; ?>
                 </select>
-                <?php if ($enviado && !empty($mensajeErrorMarca)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorMarca ?></div>
-                <?php endif; ?>
+                <div class="invalid-feedback"><?= $mensajeErrorMarca ?></div>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Categoría</label>
-                <select class="form-select" name="categoria">
+                <select class="form-select <?= !empty($mensajeErrorCategoria) ? 'is-invalid' : '' ?>" name="categoria">
                     <option value="">Seleccione categoría...</option>
                     <?php foreach ($categorias as $id => $nombreCat): ?>
                         <option value="<?= $id ?>" <?= ($categoria == $id) ? 'selected' : '' ?>><?= $nombreCat ?></option>
                     <?php endforeach; ?>
                 </select>
-                <?php if ($enviado && !empty($mensajeErrorCategoria)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorCategoria ?></div>
-                <?php endif; ?>
+                <div class="invalid-feedback"><?= $mensajeErrorCategoria ?></div>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Proveedor</label>
-                <select class="form-select" name="proveedor">
+                <select class="form-select <?= !empty($mensajeErrorProveedor) ? 'is-invalid' : '' ?>" name="proveedor">
                     <option value="">Seleccione proveedor...</option>
                     <?php foreach ($proveedores as $id => $nombreProv): ?>
                         <option value="<?= $id ?>" <?= ($proveedor == $id) ? 'selected' : '' ?>><?= $nombreProv ?></option>
                     <?php endforeach; ?>
                 </select>
-                <?php if ($enviado && !empty($mensajeErrorProveedor)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorProveedor ?></div>
-                <?php endif; ?>
+                <div class="invalid-feedback"><?= $mensajeErrorProveedor ?></div>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Costo Unitario</label>
-                <input type="number" step="0.01" class="form-control" name="costoUnitario" value="<?= $costoUnitario ?>">
-                <?php if ($enviado && !empty($mensajeErrorCosto)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorCosto ?></div>
-                <?php endif; ?>
+                <input type="number" step="0.01" class="form-control <?= !empty($mensajeErrorCosto) ? 'is-invalid' : '' ?>" name="costoUnitario" value="<?= $costoUnitario ?>">
+                <div class="invalid-feedback"><?= $mensajeErrorCosto ?></div>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Precio Venta</label>
-                <input type="number" step="0.01" class="form-control" name="precioVenta" value="<?= $precioVenta ?>">
-                <?php if ($enviado && !empty($mensajeErrorPrecio)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorPrecio ?></div>
-                <?php endif; ?>
+                <input type="number" step="0.01" class="form-control <?= !empty($mensajeErrorPrecio) ? 'is-invalid' : '' ?>" name="precioVenta" value="<?= $precioVenta ?>">
+                <div class="invalid-feedback"><?= $mensajeErrorPrecio ?></div>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Stock</label>
-                <input type="number" class="form-control" name="stock" value="<?= $stock ?>">
-                <?php if ($enviado && !empty($mensajeErrorStock)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorStock ?></div>
-                <?php endif; ?>
+                <input type="number" class="form-control <?= !empty($mensajeErrorStock) ? 'is-invalid' : '' ?>" name="stock" value="<?= $stock ?>">
+                <div class="invalid-feedback"><?= $mensajeErrorStock ?></div>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Estado</label>
-                <select class="form-select" name="estado">
+                <select class="form-select <?= !empty($mensajeErrorEstado) ? 'is-invalid' : '' ?>" name="estado">
                     <option value="">Seleccione estado...</option>
                     <option value="Nuevo" <?= ($estado === 'Nuevo') ? 'selected' : '' ?>>Activo</option>
                     <option value="Usado" <?= ($estado === 'Usado') ? 'selected' : '' ?>>Inactivo</option>
                 </select>
-                <?php if ($enviado && !empty($mensajeErrorEstado)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorEstado ?></div>
-                <?php endif; ?>
+                <div class="invalid-feedback"><?= $mensajeErrorEstado ?></div>
             </div>
-
-            <?php if (!empty($mensajeExito)): ?>
-              <div class="alert alert-success text-center"><?= $mensajeExito ?></div>
-              <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                  setTimeout(function() {
-                    window.location.href = 'repuestos.php';
-                  }, 3000);
-                });
-              </script>
-            <?php endif; ?>
 
         </div>
         <div class="modal-footer">
@@ -212,7 +191,7 @@ cerrarConexion($mysqli);
 </div>
 
 <?php
-$hayErroresOMensajeExito = $enviado && (
+$hayErrores = $enviado && (
     !empty($mensajeErrorNombre) || 
     !empty($mensajeErrorDescripcion) ||
     !empty($mensajeErrorMarca) ||
@@ -221,12 +200,10 @@ $hayErroresOMensajeExito = $enviado && (
     !empty($mensajeErrorCosto) ||
     !empty($mensajeErrorPrecio) ||
     !empty($mensajeErrorStock) ||
-    !empty($mensajeErrorEstado) ||
-    !empty($mensajeError) ||
-    !empty($mensajeExito)
+    !empty($mensajeErrorEstado)
 );
 ?>
-<?php if ($hayErroresOMensajeExito): ?>
+<?php if ($hayErrores): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var modalEl = document.getElementById('modalNuevoRepuesto');
