@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once '../../accessoDatos/accesoDatos.php';
-
+require_once __DIR__ . '/../componentes/comprobarInicio.php';
 $checkout = $_SESSION['checkout'] ?? null;
 if (!$checkout || empty($checkout['items'])) {
   header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=vacio'); exit;

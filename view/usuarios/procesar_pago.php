@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once '../../accessoDatos/accesoDatos.php';
-
+require_once __DIR__ . '/../componentes/comprobarInicio.php';
 
 if (empty($_SESSION['checkout']['items'])) {
   header('Location: /sc502-2c2025-grupo2/view/usuarios/carrito.php?ok=vacio'); exit;
@@ -99,8 +99,28 @@ $stPedido = $conn->prepare($sqlPedido);
 $stPedido->bind_param('sdi', $direccion, $total, $idCliente);
 
 
-  $stPedido->execute();
-  $idPedido = $conn->insert_id;
+  
+
+  if (!empty($_SESSION['checkout']['items']) && $stPedido->execute()) {
+      $idPedido = $conn->insert_id;
+      $sqlUpProd = "UPDATE PRODUCTOS SET stock = stock - ? WHERE id_producto = ?;";
+      $stUpProd = $conn->prepare($sqlUpProd);
+
+      foreach ($_SESSION['checkout']['items'] as $it) {
+          $idProd   = (int)$it['id_producto'];
+          $cantidad = (int)$it['cantidad'];
+          try {
+              $stUpProd->bind_param('ii', $cantidad, $idProd);
+              $stUpProd->execute();
+          } catch(Exception $e) {
+              error_log("Error al actualizar stock: " . $e->getMessage());
+              throw $e; 
+          }
+      }
+      $stUpProd->close();
+  }
+
+
   $stPedido->close();
 
 

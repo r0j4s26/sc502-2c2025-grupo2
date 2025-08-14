@@ -2,8 +2,9 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
+session_start();
 require_once '../../../accessoDatos/accesoDatos.php';
+require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 $mysqli = abrirConexion();
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -15,28 +16,25 @@ $mensajeErrorCorreo = "";
 $mensajeErrorDireccion = "";
 $mensajeErrorMetodo = "";
 $mensajeErrorEstado = "";
+
 $proveedor = $mysqli->query("SELECT * FROM PROVEEDORES WHERE id_proveedor = $id")->fetch_assoc();
 $metodosPago = ["Contado", "Credito"];
-$nombre = $proveedor['nombre'];
-$telefono = $proveedor['telefono'];
-$correo = $proveedor['correo'];
-$direccion = $proveedor['direccion'];
-$metodo_pago = $proveedor['metodo_pago'];
-$estado = ($proveedor['estado'] == 1) ? "Activo" : "Inactivo";
+
+$nombre = $_POST['nombre'] ?? $proveedor['nombre'];
+$telefono = $_POST['telefono'] ?? $proveedor['telefono'];
+$correo = $_POST['correo'] ?? $proveedor['correo'];
+$direccion = $_POST['direccion'] ?? $proveedor['direccion'];
+$metodo_pago = $_POST['metodo_pago'] ?? (in_array($proveedor['metodo_pago'], $metodosPago) ? $proveedor['metodo_pago'] : '');
+$estado = $_POST['estado'] ?? (($proveedor['estado'] == 1) ? "Activo" : "Inactivo");
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
-    $nombre = trim($_POST["nombre"]);
-    $telefono = trim($_POST["telefono"]);
-    $correo = trim($_POST["correo"]);
-    $direccion = trim($_POST["direccion"]);
-    $metodo_pago = $_POST["metodo_pago"];
-    $estado = $_POST["estado"];
     if(strlen($nombre) < 3 || strlen($nombre) > 50) $mensajeErrorNombre = "El nombre debe tener entre 3 y 50 caracteres.";
     if(!preg_match('/^\d{8}$/', $telefono)) $mensajeErrorTelefono = "El teléfono debe tener 8 dígitos.";
     if(!filter_var($correo, FILTER_VALIDATE_EMAIL)) $mensajeErrorCorreo = "Correo no válido.";
     if(strlen($direccion) < 5) $mensajeErrorDireccion = "La dirección es demasiado corta.";
     if(!in_array($metodo_pago, $metodosPago)) $mensajeErrorMetodo = "Debe seleccionar un método de pago válido.";
     if($estado !== "Activo" && $estado !== "Inactivo") $mensajeErrorEstado = "Debe seleccionar un estado válido.";
+
     if(empty($mensajeErrorNombre) && empty($mensajeErrorTelefono) && empty($mensajeErrorCorreo) &&
        empty($mensajeErrorDireccion) && empty($mensajeErrorMetodo) && empty($mensajeErrorEstado)) {
 
@@ -83,65 +81,53 @@ cerrarConexion($mysqli);
                 <div class="alert alert-success text-center"><?= $mensajeExito ?></div>
             <?php endif; ?>
 
-            <form method="POST" novalidate>
+            <form method="POST" class="needs-validation" novalidate>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Nombre</label>
-                        <input type="text" class="form-control" name="nombre" value="<?= $nombre ?>">
-                        <?php if(!empty($mensajeErrorNombre)): ?>
-                            <div class="alert alert-danger mt-2"><?= $mensajeErrorNombre ?></div>
-                        <?php endif; ?>
+                        <input type="text" class="form-control <?= !empty($mensajeErrorNombre) ? 'is-invalid' : '' ?>" name="nombre" value="<?= $nombre ?>" required>
+                        <div class="invalid-feedback"><?= $mensajeErrorNombre ?></div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Teléfono</label>
-                        <input type="number" class="form-control" name="telefono" value="<?= $telefono ?>">
-                        <?php if(!empty($mensajeErrorTelefono)): ?>
-                            <div class="alert alert-danger mt-2"><?= $mensajeErrorTelefono ?></div>
-                        <?php endif; ?>
+                        <input type="number" class="form-control <?= !empty($mensajeErrorTelefono) ? 'is-invalid' : '' ?>" name="telefono" value="<?= $telefono ?>" required>
+                        <div class="invalid-feedback"><?= $mensajeErrorTelefono ?></div>
                     </div>
                 </div>
 
                 <div class="row g-3 mt-2">
                     <div class="col-md-6">
                         <label class="form-label">Correo</label>
-                        <input type="email" class="form-control" name="correo" value="<?= $correo ?>">
-                        <?php if(!empty($mensajeErrorCorreo)): ?>
-                            <div class="alert alert-danger mt-2"><?= $mensajeErrorCorreo ?></div>
-                        <?php endif; ?>
+                        <input type="email" class="form-control <?= !empty($mensajeErrorCorreo) ? 'is-invalid' : '' ?>" name="correo" value="<?= $correo ?>" required>
+                        <div class="invalid-feedback"><?= $mensajeErrorCorreo ?></div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Dirección</label>
-                        <input type="text" class="form-control" name="direccion" value="<?= $direccion ?>">
-                        <?php if(!empty($mensajeErrorDireccion)): ?>
-                            <div class="alert alert-danger mt-2"><?= $mensajeErrorDireccion ?></div>
-                        <?php endif; ?>
+                        <input type="text" class="form-control <?= !empty($mensajeErrorDireccion) ? 'is-invalid' : '' ?>" name="direccion" value="<?= $direccion ?>" required>
+                        <div class="invalid-feedback"><?= $mensajeErrorDireccion ?></div>
                     </div>
                 </div>
 
                 <div class="row g-3 mt-2">
                     <div class="col-md-6">
                         <label class="form-label">Método de pago</label>
-                        <select class="form-select" name="metodo_pago">
+                        <select class="form-select <?= !empty($mensajeErrorMetodo) ? 'is-invalid' : '' ?>" name="metodo_pago" required>
                             <option value="">Seleccione un método</option>
                             <?php foreach($metodosPago as $metodo): ?>
                                 <option value="<?= $metodo ?>" <?= ($metodo_pago == $metodo) ? 'selected' : '' ?>><?= $metodo ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <?php if(!empty($mensajeErrorMetodo)): ?>
-                            <div class="alert alert-danger mt-2"><?= $mensajeErrorMetodo ?></div>
-                        <?php endif; ?>
+                        <div class="invalid-feedback"><?= $mensajeErrorMetodo ?></div>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Estado</label>
-                        <select class="form-select" name="estado">
+                        <select class="form-select <?= !empty($mensajeErrorEstado) ? 'is-invalid' : '' ?>" name="estado" required>
                             <option value="">Seleccione un estado</option>
                             <option value="Activo" <?= ($estado == "Activo") ? 'selected' : '' ?>>Activo</option>
                             <option value="Inactivo" <?= ($estado == "Inactivo") ? 'selected' : '' ?>>Inactivo</option>
                         </select>
-                        <?php if(!empty($mensajeErrorEstado)): ?>
-                            <div class="alert alert-danger mt-2"><?= $mensajeErrorEstado ?></div>
-                        <?php endif; ?>
+                        <div class="invalid-feedback"><?= $mensajeErrorEstado ?></div>
                     </div>
                 </div>
 

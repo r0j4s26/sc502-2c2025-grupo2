@@ -3,7 +3,9 @@
 ini_set('display_errors',1);
 ini_set('display_startup_errors',1);
 error_reporting(E_ALL);
+session_start();
 
+require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 require_once '../../../accessoDatos/accesoDatos.php';
 $mysqli2 = abrirConexion();
 
@@ -157,111 +159,110 @@ if($enviado){
     <div class="card card-sombra">
         <div class="card-header card-header-custom">Modificar Repuesto</div>
         <div class="card-body">
+            <?php if(!empty($mensajeError)): ?>
+                <div class="alert alert-danger"><?= $mensajeError ?></div>
+            <?php endif; ?>
+            <?php if(!empty($mensajeExito)): ?>
+                <div class="alert alert-success"><?= $mensajeExito ?></div>
+            <?php endif; ?>
 
-        <?php if(!empty($mensajeError)): ?>
-            <div class="alert alert-danger"><?= $mensajeError ?></div>
-        <?php endif; ?>
-        <?php if(!empty($mensajeExito)): ?>
-            <div class="alert alert-success"><?= $mensajeExito ?></div>
-        <?php endif; ?>
-
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">Nombre del repuesto</label>
-                <input type="text" class="form-control" name="nombreRepuesto" value="<?= htmlspecialchars($nombre) ?>">
-                <?php if($enviado && !empty($mensajeErrorNombre)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorNombre ?></div>
-                <?php endif; ?>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Descripción</label>
-                <textarea class="form-control" name="descripcionRepuesto" rows="3"><?= htmlspecialchars($descripcion) ?></textarea>
-                <?php if($enviado && !empty($mensajeErrorDescripcion)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorDescripcion ?></div>
-                <?php endif; ?>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Marca</label>
-                    <select class="form-select" name="marcaRepuesto">
-                        <option value="">Seleccione marca...</option>
-                        <?php foreach($marcas as $m): ?>
-                            <option value="<?= $m ?>" <?= ($marca === $m) ? 'selected' : '' ?>><?= $m ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <?php if($enviado && !empty($mensajeErrorMarca)): ?>
-                        <div class="alert alert-danger mt-2"><?= $mensajeErrorMarca ?></div>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Nombre del repuesto</label>
+                    <input type="text" class="form-control <?= ($enviado && !empty($mensajeErrorNombre)) ? 'is-invalid' : '' ?>" name="nombreRepuesto" value="<?= htmlspecialchars($nombre) ?>">
+                    <?php if($enviado && !empty($mensajeErrorNombre)): ?>
+                        <div class="invalid-feedback"><?= $mensajeErrorNombre ?></div>
                     <?php endif; ?>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Categoría</label>
-                    <select class="form-select" name="categoria">
+
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-control <?= ($enviado && !empty($mensajeErrorDescripcion)) ? 'is-invalid' : '' ?>" name="descripcionRepuesto" rows="3"><?= htmlspecialchars($descripcion) ?></textarea>
+                    <?php if($enviado && !empty($mensajeErrorDescripcion)): ?>
+                        <div class="invalid-feedback"><?= $mensajeErrorDescripcion ?></div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Marca</label>
+                        <select class="form-select <?= ($enviado && !empty($mensajeErrorMarca)) ? 'is-invalid' : '' ?>" name="marcaRepuesto">
+                            <option value="">Seleccione marca...</option>
+                            <?php foreach($marcas as $m): ?>
+                                <option value="<?= $m ?>" <?= ($marca === $m) ? 'selected' : '' ?>><?= $m ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if($enviado && !empty($mensajeErrorMarca)): ?>
+                            <div class="invalid-feedback"><?= $mensajeErrorMarca ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select <?= ($enviado && !empty($mensajeErrorCategoria)) ? 'is-invalid' : '' ?>" name="categoria">
+                            <option value="0">No establecido</option>
+                            <?php foreach($categorias as $idCat => $nombreCat): ?>
+                                <option value="<?= $idCat ?>" <?= ($categoria == $idCat) ? 'selected' : '' ?>><?= $nombreCat ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if($enviado && !empty($mensajeErrorCategoria)): ?>
+                            <div class="invalid-feedback"><?= $mensajeErrorCategoria ?></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Costo Unitario</label>
+                        <input type="number" step="0.01" class="form-control <?= ($enviado && !empty($mensajeErrorCosto)) ? 'is-invalid' : '' ?>" name="costoUnitario" value="<?= htmlspecialchars($costoUnitario) ?>">
+                        <?php if($enviado && !empty($mensajeErrorCosto)): ?>
+                            <div class="invalid-feedback"><?= $mensajeErrorCosto ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Precio de Venta</label>
+                        <input type="number" step="0.01" class="form-control <?= ($enviado && !empty($mensajeErrorPrecio)) ? 'is-invalid' : '' ?>" name="precioVenta" value="<?= htmlspecialchars($precioVenta) ?>">
+                        <?php if($enviado && !empty($mensajeErrorPrecio)): ?>
+                            <div class="invalid-feedback"><?= $mensajeErrorPrecio ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Stock</label>
+                        <input type="number" class="form-control <?= ($enviado && !empty($mensajeErrorStock)) ? 'is-invalid' : '' ?>" name="stock" value="<?= htmlspecialchars($stock) ?>">
+                        <?php if($enviado && !empty($mensajeErrorStock)): ?>
+                            <div class="invalid-feedback"><?= $mensajeErrorStock ?></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Proveedor</label>
+                    <select class="form-select <?= ($enviado && !empty($mensajeErrorProveedor)) ? 'is-invalid' : '' ?>" name="proveedor">
                         <option value="0">No establecido</option>
-                        <?php foreach($categorias as $idCat => $nombreCat): ?>
-                            <option value="<?= $idCat ?>" <?= ($categoria == $idCat) ? 'selected' : '' ?>><?= $nombreCat ?></option>
+                        <?php foreach($proveedores as $idProv => $nombreProv): ?>
+                            <option value="<?= $idProv ?>" <?= ($proveedor == $idProv) ? 'selected' : '' ?>><?= $nombreProv ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <?php if($enviado && !empty($mensajeErrorCategoria)): ?>
-                        <div class="alert alert-danger mt-2"><?= $mensajeErrorCategoria ?></div>
+                    <?php if($enviado && !empty($mensajeErrorProveedor)): ?>
+                        <div class="invalid-feedback"><?= $mensajeErrorProveedor ?></div>
                     <?php endif; ?>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Costo Unitario</label>
-                    <input type="number" step="0.01" class="form-control" name="costoUnitario" value="<?= htmlspecialchars($costoUnitario) ?>">
-                    <?php if($enviado && !empty($mensajeErrorCosto)): ?>
-                        <div class="alert alert-danger mt-2"><?= $mensajeErrorCosto ?></div>
+                <div class="mb-3">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select <?= ($enviado && !empty($mensajeErrorEstado)) ? 'is-invalid' : '' ?>" name="estadoRepuesto">
+                        <option value="Activo" <?= ($estado === 'Activo') ? 'selected' : '' ?>>Activo</option>
+                        <option value="Inactivo" <?= ($estado === 'Inactivo') ? 'selected' : '' ?>>Inactivo</option>
+                    </select>
+                    <?php if($enviado && !empty($mensajeErrorEstado)): ?>
+                        <div class="invalid-feedback"><?= $mensajeErrorEstado ?></div>
                     <?php endif; ?>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Precio de Venta</label>
-                    <input type="number" step="0.01" class="form-control" name="precioVenta" value="<?= htmlspecialchars($precioVenta) ?>">
-                    <?php if($enviado && !empty($mensajeErrorPrecio)): ?>
-                        <div class="alert alert-danger mt-2"><?= $mensajeErrorPrecio ?></div>
-                    <?php endif; ?>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-custom" name="submitModificarRepuesto">Guardar Cambios</button>
+                    <a href="/sc502-2c2025-grupo2/view/Administracion/Repuestos/repuestos.php" class="btn btn-secondary">Cancelar</a>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Stock</label>
-                    <input type="number" class="form-control" name="stock" value="<?= htmlspecialchars($stock) ?>">
-                    <?php if($enviado && !empty($mensajeErrorStock)): ?>
-                        <div class="alert alert-danger mt-2"><?= $mensajeErrorStock ?></div>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Proveedor</label>
-                <select class="form-select" name="proveedor">
-                    <option value="0">No establecido</option>
-                    <?php foreach($proveedores as $idProv => $nombreProv): ?>
-                        <option value="<?= $idProv ?>" <?= ($proveedor == $idProv) ? 'selected' : '' ?>><?= $nombreProv ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <?php if($enviado && !empty($mensajeErrorProveedor)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorProveedor ?></div>
-                <?php endif; ?>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Estado</label>
-                <select class="form-select" name="estadoRepuesto">
-                    <option value="Activo" <?= ($estado === 'Activo') ? 'selected' : '' ?>>Activo</option>
-                    <option value="Inactivo" <?= ($estado === 'Inactivo') ? 'selected' : '' ?>>Inactivo</option>
-                </select>
-                <?php if($enviado && !empty($mensajeErrorEstado)): ?>
-                    <div class="alert alert-danger mt-2"><?= $mensajeErrorEstado ?></div>
-                <?php endif; ?>
-            </div>
-
-            <div class="text-end">
-                <button type="submit" class="btn btn-custom" name="submitModificarRepuesto">Guardar Cambios</button>
-                <a href="/sc502-2c2025-grupo2/view/Administracion/Repuestos/repuestos.php" class="btn btn-secondary">Cancelar</a>
-            </div>
-        </form>
+            </form>
         </div>
     </div>
 </div>

@@ -5,6 +5,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 session_start();
 require_once '../../accessoDatos/accesoDatos.php';
+require_once __DIR__ . '/../componentes/comprobarInicio.php';
 
 if (!isset($_SESSION["nombreUsuario"])) {
     echo '<script> 
@@ -15,7 +16,7 @@ if (!isset($_SESSION["nombreUsuario"])) {
 }
 
 $mysqli = abrirConexion();
-
+$idUsuario = $_SESSION['idUsuario'];
 $citas = $mysqli->query(
     "SELECT 
         id_cita,
@@ -24,6 +25,7 @@ $citas = $mysqli->query(
         motivo,
         estado
     FROM CITAS
+    WHERE id_cliente = $idUsuario
     ORDER BY fecha DESC, hora DESC"
 );
 
@@ -85,7 +87,7 @@ cerrarConexion($mysqli);
 
         </div>
 
-        <?php include 'agregarCita.php'; ?>
+        <?php include 'usuAgregarCitas.php';?>
 
     </body>
 </html>
