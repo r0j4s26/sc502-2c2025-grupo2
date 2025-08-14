@@ -12,7 +12,7 @@ $id = $_GET['id'];
 $cita = $mysqli->query("SELECT * FROM CITAS WHERE id_cita = $id")->fetch_assoc();
 
 $mensajeErrorFecha = $mensajeErrorHora = $mensajeErrorEstado = $mensajeErrorMotivo = "";
-
+ 
 $fecha = $cita['fecha'];
 $hora = $cita['hora'];
 $estado = $cita['estado'];
@@ -32,19 +32,16 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     if(strlen($motivo) < 5) $mensajeErrorMotivo = "El motivo debe tener al menos 5 caracteres.";
 
     if(empty($mensajeErrorFecha) && empty($mensajeErrorHora) && empty($mensajeErrorEstado) && empty($mensajeErrorMotivo)){
-        $stmt = $mysqli->prepare("UPDATE CITAS SET fecha = ?, hora = ?, estado = ?, motivo = ? WHERE id_cita = ?");
-        $stmt->bind_param("ssssi", $fecha, $hora, $estado, $motivo, $id);
+    $stmt = $mysqli->prepare("UPDATE CITAS SET fecha = ?, hora = ?, estado = ?, motivo = ? WHERE id_cita = ?");
+    $stmt->bind_param("ssssi", $fecha, $hora, $estado, $motivo, $id);
 
-        if ($stmt->execute()){
-            cerrarConexion($mysqli);
-            echo '<script>
-                    alert("La cita se actualizo correctamente.");
-                    window.location.href = "citas.php";
-                  </script>';
-            exit();
-        } else {
-            throw new exception("Sucedio un error al actualizar la cita.");
-        }
+    if ($stmt->execute()){
+        cerrarConexion($mysqli);
+        header("Location: citas.php?modificado=1");
+        exit();
+    } else {
+        $mensajeError = "Sucedió un error al actualizar la cita: " . $stmt->error;
+    }
     }
 }
 
@@ -69,7 +66,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
 <body class="bg-light">
   <?php include '../../componentes/navbar.php'; ?>
-
+ 
   <div class="container mt-5">
     <div class="card card-sombra">
       <div class="card-header card-header-custom">Modificar Cita</div>

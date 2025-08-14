@@ -5,7 +5,6 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 $mysqli = abrirConexion();
 
-$mensajeExito = "";
 $mensajeErrorFecha = "";
 $mensajeErrorHora = "";
 $mensajeErrorMotivo = "";
@@ -42,10 +41,12 @@ if ($enviado) {
         $stmt = $mysqli->prepare("INSERT INTO CITAS (fecha, hora, motivo, id_cliente) VALUES(?, ?, ?, ?)");
         $stmt->bind_param("sssi", $fecha, $hora, $motivo, $idUsuario);
 
-        if ($stmt->execute()) {
-            $mensajeExito = "¡Cita agendada correctamente!";
-            $fecha = $hora = $motivo = "";
-        } else {
+    if ($stmt->execute()) {
+        echo '<script>
+            window.location.href = "citas.php?agregado=1";
+        </script>';
+        exit();
+    } else {
             $mensajeErrorMotivo = "Ocurrió un error al agendar la cita.";
         }
     }
@@ -62,7 +63,6 @@ cerrarConexion($mysqli);
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
-
 
             <div class="mb-3">
                 <label class="form-label">Fecha</label>
@@ -85,16 +85,6 @@ cerrarConexion($mysqli);
                 <div class="invalid-feedback"><?= $mensajeErrorMotivo ?></div>
             </div>
 
-            <?php if (!empty($mensajeExito)): ?>
-              <div class="alert alert-success text-center"><?= $mensajeExito ?></div>
-              <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                  setTimeout(function() {
-                    window.location.href = 'citas.php';
-                  }, 3000);
-                });
-              </script>
-            <?php endif; ?>
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-success" name="submitAgregarCita">Guardar</button>
@@ -106,14 +96,13 @@ cerrarConexion($mysqli);
 </div>
 
 <?php
-$hayErroresOMensajeExito = $enviado && (
+$hayErrores = $enviado && (
     !empty($mensajeErrorFecha) ||
     !empty($mensajeErrorHora) ||
-    !empty($mensajeErrorMotivo) ||
-    !empty($mensajeExito)
+    !empty($mensajeErrorMotivo)
 );
 ?>
-<?php if ($hayErroresOMensajeExito): ?>
+<?php if ($hayErrores): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var modalEl = document.getElementById('modalAgregarCita');

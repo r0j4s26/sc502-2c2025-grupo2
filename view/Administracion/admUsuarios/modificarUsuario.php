@@ -42,14 +42,9 @@ if($enviado){
             $idEstado = ($estado == "Activo") ? 1 : 0;
             $stmt = $mysqli->prepare("UPDATE USUARIOS SET nombre=?, apellidos=?, telefono=?, email=?, estado=? WHERE id_cliente=?");
             $stmt->bind_param("ssssii", $nombre, $apellidos, $telefono, $email, $idEstado, $id);
-
             if($stmt->execute()){
-                $mensajeExito = "¡Usuario actualizado correctamente! Redirigiendo...";
-                echo "<script>
-                    setTimeout(function() {
-                        window.location.href = '/sc502-2c2025-grupo2/view/Administracion/admUsuarios/usuarios.php';
-                    }, 2500);
-                </script>";
+                header("Location: usuarios.php?modificado=1");
+                exit();
             } else {
                 $mensajeError = "Error al actualizar el usuario: ".$stmt->error;
             }
@@ -83,9 +78,6 @@ if($enviado){
 
         <?php if(!empty($mensajeError)): ?>
             <div class="alert alert-danger"><?= $mensajeError ?></div>
-        <?php endif; ?>
-        <?php if(!empty($mensajeExito)): ?>
-            <div class="alert alert-success"><?= $mensajeExito ?></div>
         <?php endif; ?>
 
         <form method="POST">

@@ -1,9 +1,7 @@
 <?php
-
 require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 $mysqli = abrirConexion();
 
-$mensajeExito = "";
 $mensajeErrorNombre = "";
 $mensajeErrorDescripcion = "";
 $mensajeErrorEstado = "";
@@ -37,7 +35,8 @@ if ($enviado) {
             $stmt->bind_param("ssi", $nombre, $descripcion, $estadoInt);
 
             if ($stmt->execute()) {
-                $mensajeExito = "¡Categoría agregada exitosamente! Redirigiendo al listado...";
+                header("Location: categorias.php?agregado=1");
+                exit();
             } else {
                 $mensajeError = "Error al insertar la categoría: " . $stmt->error;
             }
@@ -59,48 +58,32 @@ cerrarConexion($mysqli);
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <?php if (!empty($mensajeError)): ?>
-                        <div class="alert alert-danger" role="alert"><?= $mensajeError ?></div>
-                    <?php endif; ?>
 
                     <div class="mb-3">
                         <label for="nombreCategoria" class="form-label">Nombre</label>
-                        <input type="text" class="form-control" id="nombreCategoria" name="nombre" value="<?= $nombre ?>">
-                        <?php if ($enviado && !empty($mensajeErrorNombre)): ?>
-                            <div class="alert alert-danger mt-2"><?= $mensajeErrorNombre ?></div>
-                        <?php endif; ?>
+                        <input type="text" class="form-control <?= !empty($mensajeErrorNombre) ? 'is-invalid' : '' ?>" 
+                               id="nombreCategoria" name="nombre" value="<?= htmlspecialchars($nombre) ?>">
+                        <div class="invalid-feedback"><?= $mensajeErrorNombre ?></div>
                     </div>
 
                     <div class="mb-3">
                         <label for="descripcionCategoria" class="form-label">Descripción</label>
-                        <textarea class="form-control" id="descripcionCategoria" rows="3" name="descripcion"><?= $descripcion ?></textarea>
-                        <?php if ($enviado && !empty($mensajeErrorDescripcion)): ?>
-                            <div class="alert alert-danger mt-2"><?= $mensajeErrorDescripcion ?></div>
-                        <?php endif; ?>
+                        <textarea class="form-control <?= !empty($mensajeErrorDescripcion) ? 'is-invalid' : '' ?>" 
+                                  id="descripcionCategoria" rows="3" name="descripcion"><?= htmlspecialchars($descripcion) ?></textarea>
+                        <div class="invalid-feedback"><?= $mensajeErrorDescripcion ?></div>
                     </div>
 
                     <div class="mb-3">
                         <label for="estadoCategoria" class="form-label">Estado</label>
-                        <select class="form-select" id="estadoCategoria" name="idEstado">
+                        <select class="form-select <?= !empty($mensajeErrorEstado) ? 'is-invalid' : '' ?>" 
+                                id="estadoCategoria" name="idEstado">
                             <option value="">Seleccione...</option>
                             <option value="1" <?= ($idEstado === '1') ? 'selected' : '' ?>>Activo</option>
                             <option value="0" <?= ($idEstado === '0') ? 'selected' : '' ?>>Inactivo</option>
                         </select>
-                        <?php if ($enviado && !empty($mensajeErrorEstado)): ?>
-                            <div class="alert alert-danger mt-2"><?= $mensajeErrorEstado ?></div>
-                        <?php endif; ?>
+                        <div class="invalid-feedback"><?= $mensajeErrorEstado ?></div>
                     </div>
 
-                    <?php if (!empty($mensajeExito)): ?>
-                        <div class="alert alert-success mt-3 text-center"><?= $mensajeExito ?></div>
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                setTimeout(function() {
-                                    window.location.href = 'categorias.php';
-                                }, 3000);
-                            });
-                        </script>
-                    <?php endif; ?>
                 </div>
 
                 <div class="modal-footer">
@@ -114,9 +97,9 @@ cerrarConexion($mysqli);
 
 <?php
 
-$hayErroresOMensajeExito = $enviado && (!empty($mensajeErrorNombre) || !empty($mensajeErrorDescripcion) || !empty($mensajeErrorEstado) || !empty($mensajeError) || !empty($mensajeExito));
+$hayErrores = $enviado && (!empty($mensajeErrorNombre) || !empty($mensajeErrorDescripcion) || !empty($mensajeErrorEstado) || !empty($mensajeError));
 ?>
-<?php if ($hayErroresOMensajeExito): ?>
+<?php if ($hayErrores): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var modalEl = document.getElementById('modalAgregarCategoria');

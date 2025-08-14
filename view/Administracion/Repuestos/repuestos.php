@@ -1,8 +1,8 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-session_start();
 require_once '../../../accessoDatos/accesoDatos.php';
 require_once __DIR__ . '/../../componentes/comprobarInicio.php';
 
@@ -43,6 +43,7 @@ cerrarConexion($mysqli);
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-light">
     <?php include '../../componentes/navbar.php'; ?>
@@ -57,7 +58,7 @@ cerrarConexion($mysqli);
         </div>
 
         <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle text-center">
+            <table class="table table-bordered table-hover align-middle text-center" id="tablaRepuestos">
                 <thead class="table-danger text-center">
                     <tr>
                         <th>Nombre</th>
@@ -98,15 +99,19 @@ cerrarConexion($mysqli);
 
     <script>
         $(document).ready(function () {
-            $('table').DataTable({
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
-                }
+            $('#tablaRepuestos').DataTable({
+                language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }
             });
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            if (performance.getEntriesByType("navigation")[0].type === "reload") {
-                window.location.href = "repuestos.php"; 
+            const params = new URLSearchParams(location.search);
+            if(params.get('agregado')==='1'){
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:'Repuesto agregado exitosamente', showConfirmButton:false, timer:2200, timerProgressBar:true});
+                params.delete('agregado');
+                history.replaceState({}, '', location.pathname);
+            }
+            if(params.get('modificado')==='1'){
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:'Repuesto modificado exitosamente', showConfirmButton:false, timer:2200, timerProgressBar:true});
+                params.delete('modificado');
+                history.replaceState({}, '', location.pathname);
             }
         });
     </script>

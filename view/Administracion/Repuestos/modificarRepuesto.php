@@ -10,7 +10,7 @@ require_once '../../../accessoDatos/accesoDatos.php';
 $mysqli2 = abrirConexion();
 
 $id = isset($_GET['id_producto']) ? intval($_GET['id_producto']) : 0;
-
+ 
 $mensajeExito = "";
 $mensajeErrorNombre = "";
 $mensajeErrorDescripcion = "";
@@ -109,23 +109,18 @@ if($enviado){
 
             $mysqli = abrirConexion();
             $idEstado = ($estado == "Activo") ? 1 : 0;
-            $stmt = $mysqli->prepare("
-                UPDATE PRODUCTOS 
+            $stmt = $mysqli->prepare("UPDATE PRODUCTOS 
                 SET nombre = ?, descripcion = ?, marca = ?, costo_unitario = ?, precio_venta = ?, estado = ?, id_proveedor = ?, id_categoria = ?, stock = ?
-                WHERE id_producto = ?
-            ");
+                WHERE id_producto = ?");
             $stmt->bind_param(
                 "sssdidiiii", 
                 $nombre, $descripcion, $marca, $costoUnitario, $precioVenta, $idEstado, $proveedor, $categoria, $stock, $id
             );
 
             if($stmt->execute()){
-                $mensajeExito = "¡Repuesto actualizado correctamente! Redirigiendo...";
-                echo "<script>
-                    setTimeout(function() {
-                        window.location.href = '/sc502-2c2025-grupo2/view/Administracion/Repuestos/repuestos.php';
-                    }, 2500);
-                </script>";
+                cerrarConexion($mysqli);
+                header("Location: repuestos.php?modificado=1");
+                exit();
             } else {
                 $mensajeError = "Error al actualizar el repuesto: " . $stmt->error;
             }

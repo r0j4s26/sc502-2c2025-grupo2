@@ -42,10 +42,12 @@ if ($enviado) {
         $stmt = $mysqli->prepare("INSERT INTO CITAS (fecha, hora, motivo, id_cliente) VALUES(?, ?, ?, ?)");
         $stmt->bind_param("sssi", $fecha, $hora, $motivo, $idUsuario);
 
-        if ($stmt->execute()) {
-            $mensajeExito = "¡Cita agendada correctamente!";
-            $fecha = $hora = $motivo = "";
-        } else {
+    if ($stmt->execute()) {
+        echo '<script>
+            window.location.href = "verCitas.php?agregado=1";
+        </script>';
+        exit();
+    }  else {
             $mensajeErrorMotivo = "Ocurrió un error al agendar la cita.";
         }
     }

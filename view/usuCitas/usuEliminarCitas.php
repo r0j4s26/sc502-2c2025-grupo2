@@ -4,8 +4,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/../../componentes/comprobarInicio.php';
-require_once '../../../accessoDatos/accesoDatos.php';
+require_once __DIR__ . '/../componentes/comprobarInicio.php';
+require_once '../../accessoDatos/accesoDatos.php';
 $mysqli = abrirConexion();
 
 $id = $_GET['id'] ?? null;
@@ -17,7 +17,7 @@ if ($id) {
     $stmt->close();
 
     cerrarConexion($mysqli);
-    header("Location: citas.php?eliminado=1");
+    header("Location: verCitas.php?eliminado=1");
     exit();
 } else {
     cerrarConexion($mysqli);
